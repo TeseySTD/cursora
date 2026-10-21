@@ -9,7 +9,7 @@
   "scripts": {
     "bootstrap": "pnpm install && uv sync --all-packages",
     "dev": "concurrently -k -n api,admin,widget -c blue,magenta,green \"pnpm dev:api\" \"pnpm dev:admin\" \"pnpm dev:widget\"",
-    "dev:api": "uv run --package cursora-api uvicorn cursora_api.main:create_app --factory --reload --reload-dir apps/api/src --reload-dir packages/features/src --port 8000",
+    "dev:api": "uv run --package cursora-api uvicorn cursora_api.main:create_app --factory --reload --reload-dir apps/api/src --reload-dir packages/features/src",
     "dev:admin": "pnpm --filter @cursora/admin dev",
     "dev:widget": "pnpm --filter @cursora/widget dev",
     "db:up": "node scripts/compose.mjs dev up -d --wait postgres",

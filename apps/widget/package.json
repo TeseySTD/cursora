@@ -5,7 +5,7 @@
   "type": "module",
   "description": "Embeddable Cursora widget: one self-contained IIFE (dist/widget.js) mounted in a Shadow DOM.",
   "scripts": {
-    "dev": "vite --port 5174",
+    "dev": "vite",
     "build": "vite build",
     "analyze": "vite build --mode analyze",
     "preview": "vite preview",

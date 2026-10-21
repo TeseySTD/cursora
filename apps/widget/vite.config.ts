@@ -45,6 +45,8 @@ export default defineConfig(({ command, mode }) => ({
   css: { postcss: { plugins: [tailwindcss({ base: widgetDir }), shadowDomCss()] } },
   // Library mode does not replace process.env.NODE_ENV, which React reads.
   define: command === "build" ? { "process.env.NODE_ENV": JSON.stringify("production") } : {},
+  // Dev port from the shell environment (not .env); see .env.example.
+  server: { port: Number(process.env.WIDGET_DEV_PORT ?? 5174), strictPort: true },
   build: {
     lib: {
       entry: "src/main.tsx",
