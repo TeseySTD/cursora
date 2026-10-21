@@ -7,3 +7,6 @@
 *.woff2 binary
 *.pkl binary
 *.joblib binary
+
+# The API contract is exported from FastAPI (pnpm api:openapi); collapse it in GitHub diffs.
+packages/api-client/openapi.json linguist-generated

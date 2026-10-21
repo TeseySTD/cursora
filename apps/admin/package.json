@@ -5,11 +5,12 @@
   "type": "module",
   "description": "Cursora admin panel (SPA).",
   "scripts": {
+    "api-client": "pnpm --filter @cursora/api-client generate",
     "dev": "vite",
-    "build": "vite build",
+    "build": "pnpm api-client && vite build",
     "preview": "vite preview",
-    "test": "vitest run",
-    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.node.json"
+    "test": "pnpm api-client && vitest run",
+    "typecheck": "pnpm api-client && tsc -p tsconfig.json && tsc -p tsconfig.node.json"
   },
   "dependencies": {
     "@cursora/api-client": "workspace:*",

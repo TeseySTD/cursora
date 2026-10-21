@@ -11,3 +11,4 @@
 ml/data
 ml/models
 docs
+packages/api-client/src/generated

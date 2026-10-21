@@ -36,3 +36,6 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 *.log
+
+# Generated from packages/api-client/openapi.json on install (`prepare`)
+packages/api-client/src/generated/

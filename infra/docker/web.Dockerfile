@@ -13,7 +13,8 @@ WORKDIR /src
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/widget/package.json apps/widget/
 COPY apps/admin/package.json apps/admin/
-COPY packages/api-client/package.json packages/api-client/
+# The api-client `prepare` script generates the TS client from openapi.json during install.
+COPY packages/api-client/package.json packages/api-client/openapi.json packages/api-client/openapi-ts.config.ts packages/api-client/
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
     pnpm install --frozen-lockfile --store-dir /pnpm/store
 

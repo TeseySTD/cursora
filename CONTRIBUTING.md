@@ -28,11 +28,11 @@ All tasks are root `package.json` scripts; run them from the repo root.
 | `pnpm format` / `format:check`                    | ruff format + Prettier                                                            |
 | `pnpm typecheck`                                  | mypy (strict) + `tsc` in every JS package                                         |
 | `pnpm test`                                       | All tests; or `test:api`, `test:features`, `test:ml`, `test:widget`, `test:admin` |
-| `pnpm build`                                      | api-client type check, `widget.js`, admin bundle                                  |
+| `pnpm build`                                      | api-client generate + type check, `widget.js`, admin bundle                       |
 | `pnpm analyze:widget`                             | Build the widget and write a bundle treemap to `apps/widget/dist/stats.html`      |
 | `pnpm size:widget`                                | Widget raw/gzip size and budget check (`apps/widget/size-budget.config.mjs`)      |
 | `pnpm api:openapi`                                | Export `openapi.json` from FastAPI and regenerate the TS client                   |
-| `pnpm api:check`                                  | Fail if the committed contract is out of date                                     |
+| `pnpm api:check`                                  | Fail if the committed `openapi.json` differs from the FastAPI export              |
 | `pnpm docker:up` / `docker:down` / `docker:build` | Full stack in Docker                                                              |
 | `pnpm docker:config` / `docker:nginx-test`        | Validate the Compose files / the Nginx config                                     |
 | `pnpm ml:notebook`                                | JupyterLab in `ml/notebooks`                                                      |
@@ -49,8 +49,10 @@ Every change is tied to a Jira issue with the key `CAPTHCA-<n>`.
    Types: `feat`, `fix`, `chore`, `docs`, `refactor`, `test`, `ci`.
 2. Small commits with English messages in [Conventional Commits](https://www.conventionalcommits.org/)
    style: `feat(api): add sites repository`.
-3. Run `pnpm check`. If you changed the API, run `pnpm api:openapi` and commit the
-   regenerated `packages/api-client`.
+3. Run `pnpm check`. If you changed the API, run `pnpm api:openapi` and commit
+   `packages/api-client/openapi.json`. The TS client in `packages/api-client/src/generated` is
+   not committed: it is generated from `openapi.json` on `pnpm install` and before the admin
+   build, typecheck and tests.
 4. Open a PR titled `CAPTHCA-<n>: <summary>` and fill in the template.
 5. CI must be green (`ci-ok`) and at least one review approved before merging.
 

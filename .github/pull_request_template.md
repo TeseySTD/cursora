@@ -13,7 +13,7 @@ Jira: CAPTHCA-
 ## Checklist
 
 - [ ] `pnpm check` passes locally
-- [ ] API changed → ran `pnpm api:openapi` and committed `packages/api-client`
+- [ ] API changed → ran `pnpm api:openapi` and committed `packages/api-client/openapi.json`
 - [ ] DB models changed → added an Alembic migration (`pnpm db:revision "<message>"`)
 - [ ] No raw fingerprints stored, logged or returned (HMAC hashes only)
 - [ ] Docs / `.env.example` updated if behaviour or settings changed

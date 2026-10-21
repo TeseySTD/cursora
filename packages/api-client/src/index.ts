@@ -1,4 +1,5 @@
-// Public entry point. Everything under ./generated is produced by `pnpm api:openapi`.
+// Public entry point. Everything under ./generated is generated from openapi.json
+// (on `pnpm install`, before build/typecheck/test, and by `pnpm api:openapi`) and is not committed.
 import { client } from "./generated/client.gen";
 
 export * from "./generated";

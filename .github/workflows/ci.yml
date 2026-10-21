@@ -138,16 +138,16 @@ jobs:
       UV_LOCKED: "1"
     steps:
       - uses: actions/checkout@v7.0.1
+      # No `pnpm install`: the check only needs Node, pnpm (to run the script) and uv.
       - uses: pnpm/action-setup@v6.1.0
       - uses: actions/setup-node@v7.1.0
         with:
           node-version-file: .nvmrc
-          cache: pnpm
       - uses: astral-sh/setup-uv@v10.3.0
         with:
           enable-cache: true
-      - run: pnpm bootstrap
-      # Regenerates openapi.json + the TS client and fails if they differ from the commit.
+      # Re-exports openapi.json from FastAPI and fails if it differs from the commit.
+      # The TS client is not committed; jobs that need it generate it on install.
       - run: pnpm api:check
 
   docker:
