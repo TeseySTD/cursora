@@ -1,0 +1,23 @@
+# Code owners are requested for review automatically on PRs touching their paths.
+# Later lines take precedence. Uncomment and replace the placeholders with GitHub
+# usernames or teams (@org/team) once ownership is agreed.
+# TODO(team): assign owners.
+
+# Default owners for everything not matched below
+# *                         @OWNER
+
+# Backend: FastAPI app and shared feature extraction
+# /apps/api/                @OWNER
+# /packages/features/       @OWNER
+
+# ML stream
+# /ml/                      @OWNER
+
+# Frontend
+# /apps/widget/             @OWNER
+# /apps/admin/              @OWNER
+# /packages/api-client/     @OWNER
+
+# Infra and CI
+# /infra/                   @OWNER
+# /.github/                 @OWNER
