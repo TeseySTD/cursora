@@ -18,7 +18,10 @@ export function shadowDomCss(): Plugin {
       const fallbacks: postcss.Declaration[] = [];
       root.walkAtRules("property", (atRule) => {
         atRule.walkDecls("initial-value", (decl) => {
-          fallbacks.push(postcss.decl({ prop: atRule.params.trim(), value: decl.value }));
+          // Keep `source`: Vite warns ("did not pass the `from` option") about decls without one.
+          fallbacks.push(
+            postcss.decl({ prop: atRule.params.trim(), value: decl.value, source: decl.source }),
+          );
         });
       });
 
@@ -37,9 +40,12 @@ export function shadowDomCss(): Plugin {
       if (fallbacks.length > 0) {
         const rule = postcss.rule({
           selectors: [":host", "*", "::before", "::after", "::backdrop"],
+          source: root.source,
         });
         rule.append(fallbacks);
-        root.prepend(postcss.atRule({ name: "layer", params: "properties" }).append(rule));
+        root.prepend(
+          postcss.atRule({ name: "layer", params: "properties", source: root.source }).append(rule),
+        );
       }
     },
   };
