@@ -1,0 +1,26 @@
+[project]
+name = "cursora-ml"
+version = "0.1.0"
+description = "Cursora ML stream: synthetic bot generation and model training (scikit-learn baseline)."
+requires-python = ">=3.15"
+dependencies = [
+  "cursora-features",
+  "pandas>=3.0.6",
+  "scikit-learn>=1.9.1",
+]
+
+[dependency-groups]
+dev = ["pytest>=9.1.1"]
+# Not installed by `pnpm bootstrap`; enabled on demand by `pnpm ml:notebook`.
+notebook = ["jupyterlab>=4.6.4"]
+
+[tool.uv.sources]
+cursora-features = { workspace = true }
+
+[build-system]
+requires = ["uv_build>=0.13.4,<0.14"]
+build-backend = "uv_build"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["--import-mode=importlib"]
