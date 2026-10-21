@@ -9,9 +9,11 @@ apps/
   api/            FastAPI modular monolith (uv package cursora-api)
     src/cursora_api/
       core/       config (pydantic-settings), db (async SQLAlchemy), logging
-      tenant/ sessions/ risk/ gate/ insights/   one module per bounded context:
+      health.py   GET /health, /health/db
+      main.py     create_app() factory; api_router.py mounts module routers at /v1
+      modules/    tenant/ sessions/ risk/ gate/ insights/ — one per bounded context:
                   router -> service -> repository -> models / schemas
-      risk/       evaluator.py (pure RiskEvaluator), rules/, sensitivity.py, ml_port.py
+        risk/     evaluator.py (pure RiskEvaluator), rules/, sensitivity.py, ml_port.py
     alembic/      async migrations (metadata imported from every module's models)
     scripts/export_openapi.py
   widget/         Shadow DOM widget -> single IIFE dist/widget.js (React, Tailwind, shadcn)
