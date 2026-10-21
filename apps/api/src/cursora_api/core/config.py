@@ -16,7 +16,8 @@ class Settings(BaseSettings):
 
     env: Literal["dev", "test", "prod"] = "dev"
     log_level: str = "INFO"
-    database_url: str = "postgresql+asyncpg://cursora:cursora@localhost:5432/cursora"
+    # 127.0.0.1, not localhost: on Windows/Docker Desktop "localhost" may resolve to ::1 and hang.
+    database_url: str = "postgresql+asyncpg://cursora:cursora@127.0.0.1:5432/cursora"
     db_echo: bool = False
     db_connect_timeout_s: float = 5.0
 
