@@ -6,7 +6,7 @@ import react from "@vitejs/plugin-react";
 import type { Plugin } from "vite";
 import { defineConfig } from "vitest/config";
 
-import { shadowDomCss } from "./build/shadow-dom-css.ts";
+import { shadowDomCss } from "./plugins/shadow-dom-css.ts";
 
 const widgetDir = fileURLToPath(new URL(".", import.meta.url));
 

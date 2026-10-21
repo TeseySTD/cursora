@@ -4,5 +4,5 @@
     "lib": ["ES2023"],
     "types": ["node"]
   },
-  "include": ["vite.config.ts", "build"]
+  "include": ["vite.config.ts", "plugins"]
 }
