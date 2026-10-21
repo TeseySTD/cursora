@@ -2,7 +2,7 @@
 name = "cursora-features"
 version = "0.1.0"
 description = "Signal -> feature vector extraction shared by the API (inference) and ML (training)."
-requires-python = ">=3.15"
+requires-python = ">=3.14"
 dependencies = []
 
 [dependency-groups]
