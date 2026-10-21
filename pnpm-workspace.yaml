@@ -1,0 +1,4 @@
+packages:
+  - apps/widget
+  - apps/admin
+  - packages/api-client

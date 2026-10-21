@@ -1,0 +1,9 @@
+pnpm-lock.yaml
+uv.lock
+**/dist/
+**/.venv/
+packages/api-client/openapi.json
+packages/api-client/src/generated/
+ml/notebooks/
+# Python is formatted by ruff
+**/*.py
