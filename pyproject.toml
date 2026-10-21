@@ -1,0 +1,29 @@
+# uv workspace root (virtual: not a package itself).
+# Members share one lockfile (uv.lock) and one virtualenv (.venv).
+
+[tool.uv.workspace]
+members = ["apps/api", "packages/features", "ml"]
+
+[dependency-groups]
+# Repo-wide tooling; member-specific test deps live in each member's `dev` group.
+dev = [
+  "mypy>=2.4.0",
+  "ruff>=0.17.1",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py315"
+extend-exclude = ["ml/notebooks"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "ASYNC", "RUF"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["cursora_api", "cursora_features", "cursora_ml"]
+
+[tool.mypy]
+python_version = "3.15"
+strict = true
+files = ["apps/api/src", "packages/features/src", "ml/src"]
+plugins = ["pydantic.mypy"]
