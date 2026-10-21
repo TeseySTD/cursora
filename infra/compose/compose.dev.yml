@@ -1,0 +1,26 @@
+# Dev overrides: pnpm db:up uses compose.yml + this file.
+# Admin and widget run on the Vite dev servers (pnpm dev), not in Docker.
+services:
+  postgres:
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+
+  # Hot reload when the api runs in Docker: sources are bind-mounted and put ahead of the
+  # installed (non-editable) packages on PYTHONPATH.
+  api:
+    environment:
+      CURSORA_ENV: dev
+      PYTHONPATH: /src/apps/api/src:/src/packages/features/src
+    volumes:
+      - ../../apps/api/src:/src/apps/api/src:ro
+      - ../../packages/features/src:/src/packages/features/src:ro
+      - ../../apps/api/alembic:/app/alembic:ro
+    command:
+      - sh
+      - -c
+      - >-
+        alembic upgrade head &&
+        exec uvicorn cursora_api.main:create_app --factory --host 0.0.0.0 --port 8000
+        --root-path /api --reload --reload-dir /src/apps/api/src --reload-dir /src/packages/features/src
+    ports:
+      - "8000:8000"
