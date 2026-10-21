@@ -26,6 +26,9 @@ pnpm dev            # api + admin + widget dev servers
 | http://localhost:5173      | Admin panel (proxies `/api` to the API) |
 | http://localhost:5174      | Widget test harness                     |
 
+A busy port makes the server exit instead of moving to another port. To use other ports, set
+`UVICORN_PORT`, `ADMIN_DEV_PORT` and `WIDGET_DEV_PORT` in the shell (see `.env.example`).
+
 Full stack in Docker: `pnpm docker:up`
 
 | URL                                    | What                                   |

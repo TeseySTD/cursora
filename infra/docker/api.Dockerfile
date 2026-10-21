@@ -4,7 +4,7 @@
 FROM ghcr.io/astral-sh/uv:0.13.4 AS uv
 
 # ---- build: resolve and install the locked dependencies into /app/.venv ----
-FROM python:3.15-slim-trixie AS build
+FROM python:3.14-slim-trixie AS build
 COPY --from=uv /uv /usr/local/bin/uv
 ENV UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy \
@@ -27,7 +27,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-dev --package cursora-api --no-editable
 
 # ---- runtime: venv + migrations only, no uv, no sources ----
-FROM python:3.15-slim-trixie AS runtime
+FROM python:3.14-slim-trixie AS runtime
 RUN useradd --system --uid 10001 --home-dir /app cursora
 WORKDIR /app
 COPY --from=build /app/.venv /app/.venv

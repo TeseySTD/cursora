@@ -13,7 +13,7 @@ dev = [
 
 [tool.ruff]
 line-length = 100
-target-version = "py315"
+target-version = "py314"
 extend-exclude = ["ml/notebooks"]
 
 [tool.ruff.lint]
@@ -23,13 +23,7 @@ select = ["E", "F", "W", "I", "UP", "B", "SIM", "ASYNC", "RUF"]
 known-first-party = ["cursora_api", "cursora_features", "cursora_ml"]
 
 [tool.mypy]
-python_version = "3.15"
+python_version = "3.14"
 strict = true
 files = ["apps/api/src", "packages/features/src", "ml/src"]
 plugins = ["pydantic.mypy"]
-
-[tool.uv.extra-build-variables]
-# PyYAML (via jupyterlab, `notebook` group) has no cp315 wheel yet; building its C extension
-# needs a compiler (MSVC on Windows). Build the pure-Python variant instead. Only affects
-# source builds; remove once PyYAML ships Python 3.15 wheels.
-pyyaml = { PYYAML_FORCE_LIBYAML = "0" }

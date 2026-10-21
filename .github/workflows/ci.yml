@@ -125,12 +125,10 @@ jobs:
           name: widget
           path: apps/widget/dist/widget.js
           if-no-files-found: error
-      - name: Widget size summary
-        run: |
-          {
-            echo "### Widget bundle size"
-            node scripts/widget-size.mjs
-          } >> "$GITHUB_STEP_SUMMARY"
+      # Writes the size table to the job summary. Budget: apps/widget/size-budget.config.mjs
+      # (warning only unless its mode is "error").
+      - name: Widget size budget
+        run: pnpm size:widget
 
   contract:
     needs: changes

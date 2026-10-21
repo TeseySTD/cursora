@@ -5,8 +5,9 @@
   "type": "module",
   "description": "Embeddable Cursora widget: one self-contained IIFE (dist/widget.js) mounted in a Shadow DOM.",
   "scripts": {
-    "dev": "vite --port 5174",
+    "dev": "vite",
     "build": "vite build",
+    "analyze": "vite build --mode analyze",
     "preview": "vite preview",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.node.json"
@@ -30,6 +31,7 @@
     "@vitejs/plugin-react": "^6.1.2",
     "jsdom": "^30.1.3",
     "postcss": "^8.5.31",
+    "rollup-plugin-visualizer": "^7.1.1",
     "shadcn": "^4.22.1",
     "tailwindcss": "^4.3.3",
     "tw-animate-css": "^1.4.0",
