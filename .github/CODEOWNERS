@@ -1,23 +1,36 @@
-# Code owners are requested for review automatically on PRs touching their paths.
-# Later lines take precedence. Uncomment and replace the placeholders with GitHub
-# usernames or teams (@org/team) once ownership is agreed.
-# TODO(team): assign owners.
+# Rules are evaluated top to bottom; the LAST matching pattern wins.
+# Put general rules first and specific ones below them.
 
-# Default owners for everything not matched below
-# *                         @OWNER
+# Default: anything not matched below
+*                                           @TeseySTD
 
-# Backend: FastAPI app and shared feature extraction
-# /apps/api/                @OWNER
-# /packages/features/       @OWNER
-
-# ML stream
-# /ml/                      @OWNER
+# Backend
+/apps/api/                                  @Sandoplay @andrewww05
+/apps/api/alembic/                          @Sandoplay
+/apps/api/src/cursora_api/modules/tenant/   @Sandoplay
+/apps/api/src/cursora_api/modules/sessions/ @Sandoplay
+/apps/api/src/cursora_api/modules/risk/     @andrewww05
+/apps/api/src/cursora_api/modules/gate/     @Sandoplay @Redby238
+/apps/api/tests/                            @Sandoplay @andrewww05 @Tomjerri1
 
 # Frontend
-# /apps/widget/             @OWNER
-# /apps/admin/              @OWNER
-# /packages/api-client/     @OWNER
+/apps/widget/                               @Yelyzaaveta
+/apps/admin/                                @Yelyzaaveta
+
+# API contract: both sides must see changes
+/packages/api-client/                       @Sandoplay @Yelyzaaveta
+
+# Shared features: ML and the Risk Engine both depend on this
+/packages/features/                         @C0ldarm @staleread @andrewww05
+
+# ML
+/ml/                                        @C0ldarm @staleread
 
 # Infra and CI
-# /infra/                   @OWNER
-# /.github/                 @OWNER
+/infra/                                     @Redby238nick
+/.github/workflows/                         @Redby238
+/scripts/                                   @Redby238
+
+# Docs and the ownership file itself
+/docs/                                      @TeseySTD
+/.github/CODEOWNERS                         @TeseySTD
