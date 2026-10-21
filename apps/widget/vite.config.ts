@@ -3,6 +3,7 @@ import { gzipSync } from "node:zlib";
 
 import tailwindcss from "@tailwindcss/postcss";
 import react from "@vitejs/plugin-react";
+import { visualizer } from "rollup-plugin-visualizer";
 import type { Plugin } from "vite";
 import { defineConfig } from "vitest/config";
 
@@ -26,8 +27,19 @@ function reportGzipSize(): Plugin {
   };
 }
 
-export default defineConfig(({ command }) => ({
-  plugins: [react(), reportGzipSize()],
+export default defineConfig(({ command, mode }) => ({
+  plugins: [
+    react(),
+    reportGzipSize(),
+    // `pnpm analyze:widget`: per-module treemap with gzip sizes at dist/stats.html.
+    mode === "analyze" &&
+      visualizer({
+        filename: "dist/stats.html",
+        template: "treemap",
+        gzipSize: true,
+        brotliSize: true,
+      }),
+  ],
   resolve: { alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) } },
   // Tailwind runs through PostCSS (not @tailwindcss/vite) so our shadow-DOM pass runs after it.
   css: { postcss: { plugins: [tailwindcss({ base: widgetDir }), shadowDomCss()] } },

@@ -34,6 +34,7 @@
     "test:widget": "pnpm --filter @cursora/widget test",
     "test:admin": "pnpm --filter @cursora/admin test",
     "build": "pnpm --filter @cursora/api-client build && pnpm --filter @cursora/widget build && pnpm --filter @cursora/admin build",
+    "analyze:widget": "pnpm --filter @cursora/widget analyze",
     "api:openapi": "node scripts/export-openapi.mjs",
     "api:check": "node scripts/api-check.mjs",
     "docker:up": "node scripts/compose.mjs prod up -d --build --wait",
