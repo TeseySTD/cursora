@@ -1,0 +1,125 @@
+{
+  "components": {
+    "schemas": {
+      "HealthResponse": {
+        "properties": {
+          "status": {
+            "enum": [
+              "ok",
+              "unavailable"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "HealthResponse",
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "Cursora API",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/health": {
+      "get": {
+        "description": "Liveness probe: the process is up. Does not touch the database.",
+        "operationId": "system_health",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Health",
+        "tags": [
+          "system"
+        ]
+      }
+    },
+    "/health/db": {
+      "get": {
+        "description": "Readiness of the database: runs ``SELECT 1``.",
+        "operationId": "system_health_db",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Health Db",
+        "tags": [
+          "system"
+        ]
+      }
+    },
+    "/v1/gate/check": {
+      "get": {
+        "description": "Nginx ``auth_request`` target for protected routes.\n\nNginx treats 2xx as \"let the request through\" and 401/403 as \"deny\".\nThis stub always allows.\n\nTODO(team): decide the response codes (and any headers) for the\n``challenge_required`` and ``blocked`` outcomes, and how Nginx maps them\n(error_page / redirect to the challenge). Until then: always 204.",
+        "operationId": "gate_check",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Check",
+        "tags": [
+          "gate"
+        ]
+      }
+    }
+  },
+  "tags": [
+    {
+      "description": "Liveness and readiness probes.",
+      "name": "system"
+    },
+    {
+      "description": "Sites, site keys and per-site settings.",
+      "name": "tenant"
+    },
+    {
+      "description": "Widget sessions and collected signals.",
+      "name": "sessions"
+    },
+    {
+      "description": "Risk Engine: features -> score -> decision.",
+      "name": "risk"
+    },
+    {
+      "description": "Nginx auth_request endpoint for protected routes.",
+      "name": "gate"
+    },
+    {
+      "description": "Aggregate statistics for the admin panel.",
+      "name": "insights"
+    }
+  ]
+}
