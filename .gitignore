@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+.venv/
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+
+# Python caches
+__pycache__/
+*.py[cod]
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# ML artefacts
+ml/data/*
+!ml/data/.gitkeep
+ml/models/*
+!ml/models/.gitkeep
+.ipynb_checkpoints/
+
+# Env
+.env
+.env.*
+!.env.example
+
+# Tooling / OS
+.vite/
+coverage/
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.log
