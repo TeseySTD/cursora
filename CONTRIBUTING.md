@@ -29,6 +29,8 @@ All tasks are root `package.json` scripts; run them from the repo root.
 | `pnpm typecheck`                                  | mypy (strict) + `tsc` in every JS package                                         |
 | `pnpm test`                                       | All tests; or `test:api`, `test:features`, `test:ml`, `test:widget`, `test:admin` |
 | `pnpm build`                                      | api-client type check, `widget.js`, admin bundle                                  |
+| `pnpm analyze:widget`                             | Build the widget and write a bundle treemap to `apps/widget/dist/stats.html`      |
+| `pnpm size:widget`                                | Widget raw/gzip size and budget check (`apps/widget/size-budget.config.mjs`)      |
 | `pnpm api:openapi`                                | Export `openapi.json` from FastAPI and regenerate the TS client                   |
 | `pnpm api:check`                                  | Fail if the committed contract is out of date                                     |
 | `pnpm docker:up` / `docker:down` / `docker:build` | Full stack in Docker                                                              |
