@@ -51,7 +51,9 @@
 
     <h2>Widget</h2>
     <!-- In production a site embeds:
-         <script src="https://<cursora-host>/widget/widget.js" data-site-key="..."></script> -->
+         <script src="https://<cursora-host>/widget/widget.js" data-site-key="..."></script>
+         The widget opens a session through the API (pnpm dev:api). A new session shows
+         nothing; the checkbox only appears in the challenge_required state. -->
     <div id="cursora-slot"></div>
     <script type="module" src="/src/dev.tsx"></script>
   </body>

@@ -10,6 +10,8 @@ import { defineConfig } from "vitest/config";
 import { shadowDomCss } from "./plugins/shadow-dom-css.ts";
 
 const widgetDir = fileURLToPath(new URL(".", import.meta.url));
+// Dev ports come from the shell environment (not .env); see .env.example.
+const apiPort = process.env.UVICORN_PORT ?? "8000";
 
 function reportGzipSize(): Plugin {
   return {
@@ -45,8 +47,19 @@ export default defineConfig(({ command, mode }) => ({
   css: { postcss: { plugins: [tailwindcss({ base: widgetDir }), shadowDomCss()] } },
   // Library mode does not replace process.env.NODE_ENV, which React reads.
   define: command === "build" ? { "process.env.NODE_ENV": JSON.stringify("production") } : {},
-  // Dev port from the shell environment (not .env); see .env.example.
-  server: { port: Number(process.env.WIDGET_DEV_PORT ?? 5174), strictPort: true },
+  server: {
+    port: Number(process.env.WIDGET_DEV_PORT ?? 5174),
+    strictPort: true,
+    proxy: {
+      // Same as the admin: /api/* -> FastAPI with the /api prefix stripped. Same origin, so the
+      // harness gets the session cookie without CORS.
+      "/api": {
+        target: `http://127.0.0.1:${apiPort}`,
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ""),
+      },
+    },
+  },
   build: {
     lib: {
       entry: "src/main.tsx",

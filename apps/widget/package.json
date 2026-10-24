@@ -5,14 +5,16 @@
   "type": "module",
   "description": "Embeddable Cursora widget: one self-contained IIFE (dist/widget.js) mounted in a Shadow DOM.",
   "scripts": {
+    "api-client": "pnpm --filter @cursora/api-client generate",
     "dev": "vite",
-    "build": "vite build",
-    "analyze": "vite build --mode analyze",
+    "build": "pnpm api-client && vite build",
+    "analyze": "pnpm api-client && vite build --mode analyze",
     "preview": "vite preview",
-    "test": "vitest run",
-    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.node.json"
+    "test": "pnpm api-client && vitest run",
+    "typecheck": "pnpm api-client && tsc -p tsconfig.json && tsc -p tsconfig.node.json"
   },
   "dependencies": {
+    "@cursora/api-client": "workspace:*",
     "cn": "^0.5.0",
     "lucide-react": "^1.60.0",
     "radix-ui": "^1.8.1",

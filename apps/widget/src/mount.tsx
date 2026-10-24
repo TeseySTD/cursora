@@ -1,7 +1,8 @@
-import { StrictMode } from "react";
+import { StrictMode, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 
 import { PortalContainerProvider } from "@/lib/portal";
+import { openSession } from "@/lib/session";
 import styles from "@/styles.css?inline";
 import { Widget } from "@/Widget";
 
@@ -9,6 +10,8 @@ export const HOST_TAG = "cursora-widget";
 
 export interface MountOptions {
   siteKey: string;
+  /** Base URL of the Cursora API, e.g. "https://<cursora-host>/api". */
+  apiBaseUrl: string;
 }
 
 export interface MountedWidget {
@@ -26,9 +29,16 @@ export interface MountedWidget {
  */
 export function mountWidget(
   anchor: Element,
-  { siteKey }: MountOptions,
+  { siteKey, apiBaseUrl }: MountOptions,
   position: InsertPosition = "beforeend",
 ): MountedWidget {
+  // Once per mount, outside React: StrictMode runs effects twice in development, which would
+  // race two "create" requests for a visitor without a session cookie.
+  const session = openSession(apiBaseUrl).catch((error: unknown) => {
+    console.error("[cursora] could not open a session", error);
+    return null;
+  });
+
   // A custom tag name so generic host selectors (div, span, ...) do not hit the host element.
   const host = document.createElement(HOST_TAG);
   anchor.insertAdjacentElement(position, host);
@@ -47,7 +57,9 @@ export function mountWidget(
   root.render(
     <StrictMode>
       <PortalContainerProvider value={portalContainer}>
-        <Widget siteKey={siteKey} />
+        <Suspense fallback={null}>
+          <Widget siteKey={siteKey} session={session} />
+        </Suspense>
       </PortalContainerProvider>
     </StrictMode>,
   );

@@ -1,19 +1,29 @@
-import { useState } from "react";
+import type { SessionResponse } from "@cursora/api-client";
+import { use, useState } from "react";
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 export interface WidgetProps {
   siteKey: string;
+  /** The visitor's server-side session, or null when it could not be opened. */
+  session: Promise<SessionResponse | null>;
 }
 
 /**
- * Placeholder UI: renders the "challenge" state (checkbox).
+ * Renders what the visitor's session calls for. A new session shows nothing.
  *
  * TODO(team): widget state machine (collecting signals / challenge / route drag / passed /
- * blocked), copy and i18n, and talking to the API with `siteKey`.
+ * blocked), copy and i18n, and sending `siteKey` to the API.
  */
-export function Widget({ siteKey }: WidgetProps) {
+export function Widget({ siteKey, session }: WidgetProps) {
+  const current = use(session);
+  if (current?.state !== "challenge_required") return null;
+  return <ChallengePlaceholder siteKey={siteKey} />;
+}
+
+/** Placeholder UI for the "challenge" state (checkbox). */
+function ChallengePlaceholder({ siteKey }: { siteKey: string }) {
   const [checked, setChecked] = useState(false);
 
   return (

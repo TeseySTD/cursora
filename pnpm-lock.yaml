@@ -275,6 +275,9 @@ importers:
 
   apps/widget:
     dependencies:
+      '@cursora/api-client':
+        specifier: workspace:*
+        version: link:../../packages/api-client
       cn:
         specifier: ^0.5.0
         version: 0.5.0

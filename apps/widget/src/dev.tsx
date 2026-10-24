@@ -1,5 +1,6 @@
 // Dev harness entry (index.html). Module scripts have no document.currentScript, so mount explicitly.
+// "/api" goes through the Vite dev proxy to the API (pnpm dev:api).
 import { mountWidget } from "./mount";
 
 const slot = document.getElementById("cursora-slot");
-if (slot) mountWidget(slot, { siteKey: "dev-site-key" });
+if (slot) mountWidget(slot, { siteKey: "dev-site-key", apiBaseUrl: "/api" });
