@@ -275,6 +275,9 @@ importers:
 
   apps/widget:
     dependencies:
+      '@cursora/api-client':
+        specifier: workspace:*
+        version: link:../../packages/api-client
       lucide-react:
         specifier: ^1.60.0
         version: 1.60.0(@types/react@19.3.0)(react@19.3.1)
