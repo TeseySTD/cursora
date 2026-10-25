@@ -11,8 +11,8 @@ context: |
   Risk Engine (optional ML score) decides allow / challenge / block; a checkbox and one
   interactive CAPTCHA handle suspicious visitors; after a pass the widget puts a short-lived token
   into the form and the site's backend verifies it with its secret key through the Cursora API.
-  An optional Nginx `auth_request` gate (GET /v1/gate/check) exists in the repo; whether it
-  stays is open (OQ-1). Site owners set one sensitivity (0-100) per site and see statistics.
+  Nginx is only a reverse proxy; the old `auth_request` gate (GET /v1/gate/check) in the repo
+  is not an integration path (removing it is OQ-1). Site owners set one sensitivity (0-100) per site and see statistics.
 
   Sources of truth, read before writing any artifact and do not restate them:
   - AGENTS.md: stack, repo map, commands, architecture rules, conventions, boundaries.

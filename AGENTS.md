@@ -11,8 +11,9 @@ register their sites, embed the Cursora widget and verify its result on their ba
 Cursora API. The widget passively collects behavioural signals, a FastAPI backend scores them with
 a deterministic risk engine (optionally assisted by an ML score) and decides allow / challenge /
 block, and after a pass the widget puts a short-lived token into the form that the site's backend
-verifies with its secret key. An Nginx `auth_request` gate (`GET /v1/gate/check`) also exists in
-the repo as an optional integration; whether it stays is an open question.
+verifies with its secret key. Nginx is only a reverse proxy; the `auth_request` gate
+(`GET /v1/gate/check`) left in the repo from the earlier design is not an integration path, and
+whether its code is removed is an open question.
 
 - Business logic, requirements, decisions and open questions:
   [docs/project-context.md](docs/project-context.md). Read the relevant sections before changing

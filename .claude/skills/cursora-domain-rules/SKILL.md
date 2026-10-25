@@ -67,12 +67,12 @@ keep the code working without the value (configurable or clearly stubbed), and t
   once (BR-25, BR-26). Token format and lifetime are open (OQ-14).
 - What the site's backend does when the verify API is unreachable is open (OQ-11).
 
-## Optional Nginx gate
+## Old Nginx gate (not an integration path)
 
-- The repo also has an Nginx `auth_request` -> `GET /v1/gate/check` gate (BR-20..BR-23): the
-  session status decides `verified` forward, `challenge_required` challenge, `blocked` block, and
-  Nginx holds no business logic. Whether it stays is open (OQ-1); gate details (codes OQ-12,
-  `new`/no cookie OQ-9) stay `TODO(team)`.
+- The repo still has an Nginx `auth_request` -> `GET /v1/gate/check` gate from the earlier
+  design (BR-20..BR-23). The team answered on 2026-10-25 that Nginx is only a reverse proxy
+  without business logic, so do not build features on the gate; whether its code is removed is
+  open (OQ-1).
 
 ## Sites, admin and statistics
 
