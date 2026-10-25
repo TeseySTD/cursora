@@ -45,3 +45,11 @@ packages/api-client/src/generated/
 /openspec/*
 !/openspec/config.yaml
 !/openspec/schemas/
+
+# Claude Code: personal settings and notes (the shared files in .claude/ are committed)
+.claude/settings.local.json
+.claude/worktrees/
+CLAUDE.local.md
+
+# Playwright MCP output (screenshots, traces)
+.playwright-mcp/
