@@ -1,0 +1,163 @@
+# Dependabot version updates: every ecosystem in the repo, weekly on Monday 09:00 Kyiv time.
+# https://docs.github.com/en/code-security/reference/supply-chain-security/dependabot-options-reference
+#
+# - Minor and patch updates are grouped into one PR per ecosystem; majors come as separate PRs.
+#   Merge or close each weekly group PR before the next run: while it is open, majors of its
+#   members can be held back (dependabot-core#14202). Dependabot treats 0.x -> 0.y as minor.
+# - Commit messages and PR titles use Conventional Commits (build(deps), ci(deps)). Dependabot
+#   PRs have no Jira key and keep their dependabot/... branch names.
+# - Not managed by Dependabot, bump by hand: .nvmrc, .python-version, "packageManager" and
+#   "engines" in package.json, the postgres service image in .github/workflows/ci.yml and the
+#   actionlint image in scripts/actionlint.mjs.
+
+version: 2
+
+updates:
+  # JavaScript/TypeScript: one pnpm workspace. From "/" Dependabot reads package.json,
+  # pnpm-lock.yaml and pnpm-workspace.yaml, which bring in apps/widget, apps/admin and
+  # packages/api-client. Do not list those directories separately.
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Europe/Kyiv"
+    cooldown:
+      default-days: 3
+      semver-major-days: 7
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "build"
+      include: "scope"
+    groups:
+      npm-minor-patch:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        exclude-patterns:
+          # Exact-pinned 0.x generator of the API client: review its updates on their own.
+          - "@hey-api/*"
+        update-types:
+          - "minor"
+          - "patch"
+    ignore:
+      # @types/node follows the Node major in .nvmrc; bump both together by hand.
+      - dependency-name: "@types/node"
+        update-types:
+          - "version-update:semver-major"
+
+  # Python: one uv workspace with a single uv.lock at the root. From "/" Dependabot reads
+  # [tool.uv.workspace].members, which brings in apps/api, packages/features and ml.
+  - package-ecosystem: "uv"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Europe/Kyiv"
+    cooldown:
+      default-days: 3
+      semver-major-days: 7
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "build"
+      include: "scope"
+    groups:
+      uv-minor-patch:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+    ignore:
+      # Workspace members ({ workspace = true }); never resolve them against PyPI.
+      - dependency-name: "cursora-*"
+
+  # Base images in infra/docker/api.Dockerfile and infra/docker/web.Dockerfile. Any file name
+  # containing "Dockerfile" is detected, but only in the directory listed here.
+  - package-ecosystem: "docker"
+    directory: "/infra/docker"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Europe/Kyiv"
+    cooldown:
+      default-days: 3
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "build"
+      include: "scope"
+    groups:
+      docker-minor-patch:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+    ignore:
+      # The image's Python line must match .python-version and requires-python (3.14).
+      # To Dependabot 3.14 -> 3.15 is a minor update, so block minor and major here.
+      - dependency-name: "python"
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
+      # The Node major must match .nvmrc, which CI uses; change both together by hand.
+      - dependency-name: "node"
+        update-types:
+          - "version-update:semver-major"
+
+  # Images in infra/compose/compose.yml (compose.dev.yml only overrides services).
+  - package-ecosystem: "docker-compose"
+    directory: "/infra/compose"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Europe/Kyiv"
+    cooldown:
+      default-days: 3
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "build"
+      include: "scope"
+    groups:
+      compose-minor-patch:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+    ignore:
+      # A Postgres major upgrade needs a data migration, and the postgres service image in
+      # .github/workflows/ci.yml has to change with it.
+      - dependency-name: "postgres"
+        update-types:
+          - "version-update:semver-major"
+
+  # Actions referenced by `uses:` in .github/workflows/*.yml.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Europe/Kyiv"
+    cooldown:
+      default-days: 3
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    groups:
+      actions-minor-patch:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
