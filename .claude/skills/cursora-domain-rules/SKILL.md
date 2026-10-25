@@ -70,10 +70,13 @@ keep the code working without the value (configurable or clearly stubbed), and t
 ## Sites, admin and statistics
 
 - A site has a domain, allowed origins, an origin backend address and a public site key
-  (`data-site-key`) (BR-26). Administrators change only the sensitivity (BR-28).
+  (`data-site-key`) (BR-26). Administrators never see or edit individual rules; they set the
+  sensitivity. Whether extra per-site parameters (attempts, block duration, request limit) are
+  editable is open (BR-28, OQ-25).
 - Project roles ADMIN and DEVELOPER; details open (BR-29, OQ-27).
-- Statistics are per site and aggregate (traffic, CAPTCHA outcomes, risk scores, blocks);
-  metrics are open (BR-30, OQ-28). Label any false-positive figure as a proxy metric (BR-31).
+- Statistics are aggregate (traffic, CAPTCHA outcomes, risk scores, blocks); a per-site
+  dashboard is proposed and the metrics are open (BR-30, OQ-28). Label any false-positive figure
+  as a proxy metric (BR-31).
 
 ## Privacy
 
