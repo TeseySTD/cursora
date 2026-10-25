@@ -58,19 +58,26 @@ keep the code working without the value (configurable or clearly stubbed), and t
 - `human` passes, `suspicious` gets another attempt, `bot` is blocked temporarily; attempt limit
   and block duration/scope are open (BR-18, BR-19, OQ-21, OQ-23).
 
-## Gate (Nginx)
+## Integration: tokens like reCAPTCHA (decided 2026-10-25)
 
-- Only configured protected routes are checked; everything else is forwarded (BR-20).
-- Nginx `auth_request` -> `GET /v1/gate/check` -> the session status decides: `verified` forward,
-  `challenge_required` challenge, `blocked` block (BR-21). Nginx holds no business logic (BR-22).
-- HTTP codes, challenge UX (OQ-12), treatment of `new`/no cookie (Proposed: challenge, OQ-9) and
-  behaviour when the API is unreachable (OQ-11) are open — keep the existing `TODO(team)`.
-- The verification-token path (secret API key, customer-side verification) is open (OQ-1).
+- Site owners register sites and get a public site key (in the widget) and a secret key (for
+  their backend). Many customer sites from the start; Cursora runs no proxy in front of them.
+- After `allow` or `human` the widget puts a short-lived verification token into the form; the
+  site's backend sends it with the secret key to the Cursora verify API; each token is accepted
+  once (BR-25, BR-26). Token format and lifetime are open (OQ-14).
+- What the site's backend does when the verify API is unreachable is open (OQ-11).
+
+## Optional Nginx gate
+
+- The repo also has an Nginx `auth_request` -> `GET /v1/gate/check` gate (BR-20..BR-23): the
+  session status decides `verified` forward, `challenge_required` challenge, `blocked` block, and
+  Nginx holds no business logic. Whether it stays is open (OQ-1); gate details (codes OQ-12,
+  `new`/no cookie OQ-9) stay `TODO(team)`.
 
 ## Sites, admin and statistics
 
-- A site has a domain, allowed origins, an origin backend address and a public site key
-  (`data-site-key`) (BR-26). Administrators never see or edit individual rules; they set the
+- A site has a domain, allowed origins, a public site key (`data-site-key`) and a secret key for
+  token verification (BR-26). Administrators never see or edit individual rules; they set the
   sensitivity. Whether extra per-site parameters (attempts, block duration, request limit) are
   editable is open (BR-28, OQ-25).
 - Project roles ADMIN and DEVELOPER; details open (BR-29, OQ-27).

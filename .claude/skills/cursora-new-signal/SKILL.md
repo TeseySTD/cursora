@@ -29,8 +29,8 @@ signals.
 - Extend the request schema in `sessions/schemas.py`; store signals as JSONB linked to the
   session (BR-6) via `sessions/repository.py`; a new column means a migration
   (`cursora-db-migration`).
-- Server-side request signals (IP, User-Agent, rate) come from the request or the headers Nginx
-  sets (`X-Real-IP`, `X-Forwarded-For`, `X-Original-URI`) — never trust client-sent copies.
+- Server-side request signals (IP, User-Agent, rate) come from the widget's API requests and the
+  headers our Nginx sets (`X-Real-IP`, `X-Forwarded-For`) — never trust client-sent copies.
 - Hash fingerprint material with HMAC before it is stored or compared; never log it.
 - Contract changed -> `pnpm api:openapi` (`cursora-api-contract`).
 

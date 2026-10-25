@@ -6,10 +6,13 @@ not them. Keep it current, short and in English.
 
 ## Project
 
-Cursora is a bot-protection (CAPTCHA) service for websites. An embeddable widget passively
-collects behavioural signals, a FastAPI backend scores them with a deterministic risk engine
-(optionally assisted by an ML score) and decides allow / challenge / block, and Nginx asks the
-API through `auth_request` before forwarding requests to a site's protected routes.
+Cursora is a bot-protection (CAPTCHA) service for websites, used like reCAPTCHA: site owners
+register their sites, embed the Cursora widget and verify its result on their backend through the
+Cursora API. The widget passively collects behavioural signals, a FastAPI backend scores them with
+a deterministic risk engine (optionally assisted by an ML score) and decides allow / challenge /
+block, and after a pass the widget puts a short-lived token into the form that the site's backend
+verifies with its secret key. An Nginx `auth_request` gate (`GET /v1/gate/check`) also exists in
+the repo as an optional integration; whether it stays is an open question.
 
 - Business logic, requirements, decisions and open questions:
   [docs/project-context.md](docs/project-context.md). Read the relevant sections before changing
