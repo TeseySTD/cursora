@@ -54,7 +54,11 @@ Every change is tied to a Jira issue with the key `CAPTHCA-<n>`.
    not committed: it is generated from `openapi.json` on `pnpm install` and before the admin
    build, typecheck and tests.
 4. Open a PR titled `CAPTHCA-<n>: <summary>` and fill in the template.
-5. CI must be green (`ci-ok`) and at least one review approved before merging.
+5. CI must be green (`ci-ok`) and at least one review approved before merging. The cubic bot
+   also reviews every PR (see the README); treat its comments as suggestions.
+
+Working with an AI coding agent? It follows [AGENTS.md](AGENTS.md); keep that file up to date
+when conventions change.
 
 ## Settings
 
