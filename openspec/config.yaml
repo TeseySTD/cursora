@@ -1,0 +1,65 @@
+# OpenSpec project configuration (CLI 1.10.0). The only committed file under openspec/:
+# specs, changes and archives are per-user and git-ignored (see AGENTS.md).
+# `context` is injected into every artifact instruction (limit 50 KB, dropped entirely if larger).
+# Quote rule items that contain ": ", otherwise YAML turns them into maps and OpenSpec drops the
+# whole rule list for that artifact.
+schema: spec-driven
+
+context: |
+  Product: Cursora, a bot-protection (CAPTCHA) service. An embeddable widget collects
+  behavioural signals; a FastAPI backend with a rules-first, pure Risk Engine (optional ML score)
+  decides allow / challenge / block; a checkbox and one interactive CAPTCHA handle suspicious
+  visitors; Nginx `auth_request` asks GET /v1/gate/check before forwarding protected routes;
+  site owners set one sensitivity (0-100) per site and see aggregate statistics.
+
+  Sources of truth, read before writing any artifact and do not restate them:
+  - AGENTS.md: stack, repo map, commands, architecture rules, conventions, boundaries.
+  - docs/project-context.md: business rules (BR-n), requirements (FR-n, NFR-n), decisions,
+    open questions (OQ-n). Only Decided and Repo items are settled.
+
+  Stack: Python 3.14, FastAPI, Pydantic v2, SQLAlchemy 2.1 async + asyncpg, Alembic,
+  PostgreSQL 18 (JSONB, no Redis); pure-Python shared feature extraction (packages/features);
+  pandas + scikit-learn in ml/ only; React 19 + Vite 8 + TypeScript 6 + Tailwind CSS 4 + shadcn/ui
+  for the Shadow-DOM widget (single IIFE) and the admin SPA (React Router 8, TanStack Query 5);
+  pytest and Vitest; pnpm 12 + uv workspaces driven by root package.json scripts.
+
+  Principles: system-first (rules work without ML); modular monolith, one module per bounded
+  context, router -> service -> repository; RiskEvaluator pure and deterministic; one
+  feature-extraction implementation for serving and training; fingerprints only as HMAC
+  hashes; no business logic in Nginx; MVP scope first.
+
+  Conventions: English; Conventional Commits; Jira keys CAPTHCA-<n> (never invent one); code-first
+  API contract (pnpm api:openapi, commit openapi.json only); migrations via pnpm db:revision;
+  pnpm check before finishing.
+
+  Never invent product requirements, thresholds, weights, score ranges, lifetimes, attempt
+  limits, HTTP status codes or schema fields. Where a team decision is needed write
+  "TODO(team): <question> (OQ-<n>)" and list it in the proposal.
+
+rules:
+  proposal:
+    - Reference the Jira key (CAPTHCA-<n>) if the user gave one. Never invent one.
+    - Cite the business rules (BR-n) the change implements and the open questions (OQ-n) it depends on.
+    - Name the affected modules and apps as they appear in the AGENTS.md repo map.
+    - List what is out of scope, using the MVP scope in docs/project-context.md.
+  specs:
+    - Describe observable behaviour only, not implementation.
+    - Use the domain vocabulary of docs/project-context.md (session statuses, decisions, verdicts).
+    - Mark every value the team has not decided as TODO(team) with its OQ number.
+  design:
+    - Check the design against the architecture rules in AGENTS.md and call out any deviation.
+    - Keep RiskEvaluator pure; I/O happens in the service layer before evaluate().
+    - State API contract changes (openapi.json) and database migrations explicitly.
+  tasks:
+    - End every task group with a verification step (a test or a command).
+    - Include pnpm api:openapi when routes or schemas change and pnpm db:revision when models change.
+    - The last task runs pnpm check.
+
+operations:
+  apply:
+    guidance:
+      - Follow AGENTS.md and the cursora-* skills; leave TODO(team) instead of inventing values.
+      - Run pnpm check before marking the last task done.
+  archive:
+    guidance:
+      - Specs and changes are local and git-ignored; put decisions others need into the PR description, docs/project-context.md or an ADR.

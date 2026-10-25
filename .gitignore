@@ -39,3 +39,9 @@ Thumbs.db
 
 # Generated from packages/api-client/openapi.json on install (`prepare`)
 packages/api-client/src/generated/
+
+# OpenSpec: only the shared configuration is committed; specs, changes and drafts are per-user.
+# Ignore the directory's contents (not the directory) so the config can be re-included.
+/openspec/*
+!/openspec/config.yaml
+!/openspec/schemas/
