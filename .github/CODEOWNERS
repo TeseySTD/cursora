@@ -27,7 +27,7 @@
 /ml/                                        @C0ldarm @staleread
 
 # Infra and CI
-/infra/                                     @Redby238nick
+/infra/                                     @Redby238
 /.github/workflows/                         @Redby238
 /scripts/                                   @Redby238
 
