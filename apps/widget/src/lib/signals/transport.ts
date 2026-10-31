@@ -23,10 +23,15 @@ export const noopTransport: SignalTransport = {
   send: () => Promise.resolve(),
 };
 
-/** Dev harness transport: prints each batch to the console. */
+/** Dev harness transport: prints each batch to the console, with a count per signal type. */
 export const consoleTransport: SignalTransport = {
   send: (batch, { keepalive }) => {
-    console.debug("[cursora] signal batch", { keepalive, ...batch });
+    const counts: Record<string, number> = {};
+    for (const signal of batch.signals) counts[signal.type] = (counts[signal.type] ?? 0) + 1;
+    const summary = Object.entries(counts)
+      .map(([type, count]) => `${type}: ${count}`)
+      .join(", ");
+    console.log(`[cursora] signal batch (${summary})`, { keepalive, ...batch });
     return Promise.resolve();
   },
 };

@@ -25,10 +25,11 @@ if (slot) {
     }
   };
 
-  // Fake flow so the buttons do something: checkbox -> loading -> verified, retry -> checkbox.
+  // Fake flow standing in for the API: on page load "Security check" while signals are collected,
+  // then the checkbox; checkbox -> loading -> verified; try again / retry -> checkbox.
   const widget = mountWidget(slot, {
     siteKey: "dev-site-key",
-    view: VIEWS["Quick security check"],
+    view: VIEWS["Security check"],
     signalTransport: consoleTransport,
     onCheck: () => {
       show(VIEWS["Checking your browser"]!);
@@ -47,5 +48,6 @@ if (slot) {
     button.addEventListener("click", () => show(view));
     switcher?.append(button);
   }
-  show(VIEWS["Quick security check"]!);
+  show(VIEWS["Security check"]!);
+  setTimeout(() => show(VIEWS["Quick security check"]!), 3000);
 }

@@ -38,12 +38,14 @@ export function mountWidget(
     siteKey,
     view = { state: "checkbox" },
     signalTransport = noopTransport,
+    onCheck,
     ...actions
   }: MountOptions,
   position: InsertPosition = "beforeend",
 ): MountedWidget {
-  // Outside React: collection lasts as long as the mount, whatever the widget renders.
-  const stopSignals = startSignals(anchor.ownerDocument, signalTransport);
+  // Outside React: collection starts on page load and lasts as long as the mount, whatever the
+  // widget renders.
+  const signals = startSignals(anchor.ownerDocument, signalTransport);
 
   // A custom tag name so generic host selectors (div, span, ...) do not hit the host element.
   const host = document.createElement(HOST_TAG);
@@ -64,7 +66,17 @@ export function mountWidget(
     root.render(
       <StrictMode>
         <PortalContainerProvider value={portalContainer}>
-          <Widget siteKey={siteKey} view={current} {...actions} />
+          <Widget
+            siteKey={siteKey}
+            view={current}
+            {...actions}
+            onCheck={() => {
+              // The checkbox click sends the accumulated signals right away (BR-14). The click
+              // itself is already buffered: the collector listens in the capture phase.
+              signals.flush();
+              onCheck?.();
+            }}
+          />
         </PortalContainerProvider>
       </StrictMode>,
     );
@@ -75,7 +87,7 @@ export function mountWidget(
     shadowRoot,
     setView: render,
     unmount: () => {
-      stopSignals();
+      signals.stop();
       root.unmount();
       host.remove();
     },

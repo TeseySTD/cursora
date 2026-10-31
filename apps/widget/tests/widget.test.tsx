@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { PortalContainerProvider } from "@/lib/portal";
+import type { SignalTransport } from "@/lib/signals";
 import { HOST_TAG, mountWidget, type MountedWidget, type MountOptions } from "@/mount";
 
 let mounted: MountedWidget | undefined;
@@ -40,6 +41,20 @@ describe("widget (smoke)", () => {
     expect(onCheck).toHaveBeenCalledOnce();
     // Nothing leaks into the light DOM.
     expect(document.body.querySelector("[role=checkbox]")).toBeNull();
+  });
+
+  it("sends the collected signals, the click included, as soon as the checkbox is ticked", async () => {
+    const send = vi.fn<SignalTransport["send"]>(() => Promise.resolve());
+    const { shadowRoot } = await mount({ signalTransport: { send } });
+    expect(send).not.toHaveBeenCalled();
+
+    await userEvent.click(query(shadowRoot).getByRole("checkbox", { name: /not a robot/i }));
+
+    expect(send).toHaveBeenCalledOnce();
+    const [batch, options] = send.mock.calls[0]!;
+    expect(batch.signals.map((s) => s.type)).toContain("env");
+    expect(batch.signals.at(-1)?.type).toBe("click");
+    expect(options).toEqual({ keepalive: false });
   });
 
   it("injects the compiled CSS into the shadow root, not document.head", async () => {
