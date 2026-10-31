@@ -5,51 +5,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Cursora widget — dev harness</title>
     <!--
-      Simulated third-party host page with deliberately hostile CSS.
-      The widget must look the same as without these rules, and the
-      host's own elements below must keep this styling (no leak outwards).
+      The widget alone, over a colourful background so its liquid glass shows. The widget places
+      itself (bottom-right corner, or centred when blocked), so the slot is just a mount point.
+      hostile.html is the same widget on a page with deliberately hostile CSS (isolation check).
     -->
     <style>
-      html {
-        font-size: 10px;
-      }
       * {
-        box-sizing: content-box !important;
-        font-family: "Comic Sans MS", cursive;
-        color: crimson;
+        box-sizing: border-box;
       }
       body {
-        background: #fffbe6;
-        line-height: 3;
-        letter-spacing: 0.2em;
-        padding: 2rem;
+        margin: 0;
+        min-height: 100vh;
+        font-family: system-ui, sans-serif;
+        background:
+          radial-gradient(circle at 20% 25%, #7cc4ff 0, transparent 35%),
+          radial-gradient(circle at 80% 30%, #ffb38a 0, transparent 30%),
+          radial-gradient(circle at 60% 85%, #9be3b0 0, transparent 35%),
+          linear-gradient(135deg, #dfe9f5, #f4e9f2);
       }
-      div,
-      label {
-        border: 3px dashed royalblue;
-        padding: 12px;
+      /* Above the widget's backdrop, so the states can still be switched while it dims the page. */
+      #dev-states {
+        position: relative;
+        z-index: 2147483647;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 6px;
+        padding: 12px 16px;
+        font-size: 12px;
       }
-      button {
-        background: hotpink;
-        padding: 30px;
-        border-radius: 0;
+      #dev-states button {
+        padding: 4px 8px;
+        font: inherit;
+        color: #0b5394;
+        background: rgb(255 255 255 / 0.6);
+        border: 1px solid rgb(255 255 255 / 0.9);
+        border-radius: 999px;
+        cursor: pointer;
       }
-      input[type="checkbox"] {
-        width: 40px;
-        height: 40px;
-      }
-      [role="checkbox"] {
-        transform: rotate(20deg);
+      #dev-states button[aria-pressed="true"] {
+        color: #fff;
+        background: #0b5394;
+        border-color: #0b5394;
       }
     </style>
   </head>
   <body>
-    <h1>Host page</h1>
-    <p>Host button and checkbox (must stay hot pink / huge):</p>
-    <button type="button">Host button</button>
-    <label><input type="checkbox" /> Host checkbox</label>
-
-    <h2>Widget</h2>
+    <nav id="dev-states" aria-label="Widget state (dev only)"></nav>
     <!-- In production a site embeds:
          <script src="https://<cursora-host>/widget/widget.js" data-site-key="..."></script> -->
     <div id="cursora-slot"></div>

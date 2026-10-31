@@ -1,44 +1,99 @@
-import { useState } from "react";
-
-import { Checkbox } from "@/components/ui/checkbox";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-
-export interface WidgetProps {
-  siteKey: string;
-}
+import {
+  BlockedState,
+  CheckboxState,
+  FailedState,
+  LoadingState,
+  VerifiedState,
+  VerifyingState,
+} from "@/components/states";
 
 /**
- * Placeholder UI: renders the "challenge" state (checkbox).
+ * What the widget shows. "hidden" is the `allow` decision: the visitor sees nothing.
  *
- * TODO(team): widget state machine (collecting signals / challenge / route drag / passed /
- * blocked), copy and i18n, and talking to the API with `siteKey`.
+ * TODO(team): who drives these transitions (session state / decision from the API) and the
+ * attempt limit and block duration; for now the host of `mountWidget` sets the view.
  */
-export function Widget({ siteKey }: WidgetProps) {
-  const [checked, setChecked] = useState(false);
+export type WidgetView =
+  | { state: "hidden" }
+  | { state: "verifying" }
+  | { state: "checkbox" }
+  | { state: "loading" }
+  | { state: "verified" }
+  | { state: "failed"; attempt: number; maxAttempts: number }
+  | { state: "blocked"; retryInMinutes: number };
+
+/** Visitor actions the widget reports. */
+export interface WidgetActions {
+  onCheck?: () => void;
+  onTryAgain?: () => void;
+  onTryAnotherWay?: () => void;
+  onRetry?: () => void;
+  onContactSupport?: () => void;
+}
+
+export interface WidgetProps extends WidgetActions {
+  siteKey: string;
+  view: WidgetView;
+}
+
+export function Widget({ siteKey, view, ...actions }: WidgetProps) {
+  if (view.state === "hidden") return null;
+
+  // A failed answer or a block dims the page around the widget. The backdrop is a sibling of the
+  // card, not inside it: the card's backdrop-filter would make it the containing block of `fixed`.
+  const dimmed = view.state === "failed" || view.state === "blocked";
+  // The block is centred on the page; every other state sits in the bottom-right corner.
+  const placement =
+    view.state === "blocked"
+      ? "inset-0 grid place-items-center p-4"
+      : "right-4 bottom-4 max-w-[calc(100vw-2rem)]";
 
   return (
-    <div
-      data-state="challenge"
-      data-site-key={siteKey}
-      className="bg-background text-foreground inline-flex items-center gap-3 rounded-md border p-3 text-sm shadow-sm"
-    >
-      <Checkbox
-        id="cursora-checkbox"
-        checked={checked}
-        onCheckedChange={(value) => setChecked(value === true)}
-      />
-      <label htmlFor="cursora-checkbox" className="cursor-pointer select-none">
-        I&apos;m not a robot
-      </label>
-      <Popover>
-        <PopoverTrigger
-          aria-label="About this check"
-          className="text-muted-foreground hover:text-foreground ml-2 size-5 rounded-full border text-xs"
-        >
-          ?
-        </PopoverTrigger>
-        <PopoverContent className="w-56 text-xs">Protected by Cursora.</PopoverContent>
-      </Popover>
+    <div data-site-key={siteKey}>
+      {dimmed && (
+        <div
+          data-cursora-backdrop=""
+          aria-hidden
+          className="animate-in fade-in fixed inset-0 z-[2147483646] bg-slate-950/55"
+        />
+      )}
+      <div
+        data-placement={view.state === "blocked" ? "center" : "corner"}
+        className={`fixed z-[2147483647] ${placement}`}
+      >
+        {renderView(view, actions)}
+      </div>
     </div>
   );
+}
+
+function renderView(view: WidgetView, actions: WidgetActions) {
+  switch (view.state) {
+    case "verifying":
+      return <VerifyingState />;
+    case "checkbox":
+      return <CheckboxState onCheck={actions.onCheck} />;
+    case "loading":
+      return <LoadingState />;
+    case "verified":
+      return <VerifiedState />;
+    case "failed":
+      return (
+        <FailedState
+          attempt={view.attempt}
+          maxAttempts={view.maxAttempts}
+          onTryAgain={actions.onTryAgain}
+          onTryAnotherWay={actions.onTryAnotherWay}
+          onContactSupport={actions.onContactSupport}
+        />
+      );
+    case "blocked":
+      return (
+        <BlockedState
+          retryInMinutes={view.retryInMinutes}
+          onRetry={actions.onRetry}
+          onContactSupport={actions.onContactSupport}
+        />
+      );
+  }
 }
