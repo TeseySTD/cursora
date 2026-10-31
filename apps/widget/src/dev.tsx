@@ -18,11 +18,19 @@ const slot = document.getElementById("cursora-slot");
 const switcher = document.getElementById("dev-states");
 
 if (slot) {
+  let pendingTransition: ReturnType<typeof setTimeout> | undefined;
+
   const show = (view: WidgetView) => {
+    clearTimeout(pendingTransition);
     widget.setView(view);
     for (const button of switcher?.querySelectorAll("button") ?? []) {
       button.setAttribute("aria-pressed", String(VIEWS[button.textContent] === view));
     }
+  };
+
+  const showAfter = (view: WidgetView, delayMs: number) => {
+    clearTimeout(pendingTransition);
+    pendingTransition = setTimeout(() => show(view), delayMs);
   };
 
   // Fake flow standing in for the API: on page load "Security check" while signals are collected,
@@ -33,7 +41,7 @@ if (slot) {
     signalTransport: consoleTransport,
     onCheck: () => {
       show(VIEWS["Checking your browser"]!);
-      setTimeout(() => show(VIEWS["Access restored"]!), 1500);
+      showAfter(VIEWS["Access restored"]!, 1500);
     },
     onTryAgain: () => show(VIEWS["Quick security check"]!),
     onRetry: () => show(VIEWS["Quick security check"]!),
@@ -49,5 +57,5 @@ if (slot) {
     switcher?.append(button);
   }
   show(VIEWS["Security check"]!);
-  setTimeout(() => show(VIEWS["Quick security check"]!), 3000);
+  showAfter(VIEWS["Quick security check"]!, 3000);
 }
