@@ -156,6 +156,23 @@ describe("widget states", () => {
     page.remove();
   });
 
+  it("keeps keyboard focus in the widget when a modal state's action changes the view", async () => {
+    const backToCheckbox = () => mounted?.setView({ state: "checkbox" });
+    const widget = await mount({ onTryAgain: backToCheckbox, onRetry: backToCheckbox });
+    const ui = query(widget.shadowRoot);
+    const checkbox = () => ui.getByRole("checkbox", { name: /not a robot/i });
+
+    act(() => widget.setView({ state: "failed", attempt: 2, maxAttempts: 3 }));
+    await userEvent.click(ui.getByRole("button", { name: "Try again" }));
+    // The clicked button was unmounted by the view change: focus lands on the new view's control,
+    // not on the non-focusable shadow host or <body>.
+    expect(widget.shadowRoot.activeElement).toBe(checkbox());
+
+    act(() => widget.setView({ state: "blocked", retryInMinutes: 14 }));
+    await userEvent.click(ui.getByRole("button", { name: "Retry" }));
+    expect(widget.shadowRoot.activeElement).toBe(checkbox());
+  });
+
   it("sits in the corner, except the block, which is centred", async () => {
     const widget = await mount();
     const placement = () =>
