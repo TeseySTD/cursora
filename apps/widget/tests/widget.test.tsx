@@ -1,36 +1,64 @@
 import { act, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it } from "vitest";
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { HOST_TAG, mountWidget, type MountedWidget } from "@/mount";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { PortalContainerProvider } from "@/lib/portal";
+import type { SignalTransport } from "@/lib/signals";
+import { HOST_TAG, mountWidget, type MountedWidget, type MountOptions } from "@/mount";
 
 let mounted: MountedWidget | undefined;
 
-async function mount(): Promise<MountedWidget> {
+async function mount(options: Partial<MountOptions> = {}): Promise<MountedWidget> {
   await act(async () => {
-    mounted = mountWidget(document.body, { siteKey: "test-key" });
+    mounted = mountWidget(document.body, { siteKey: "test-key", ...options });
   });
   return mounted!;
+}
+
+function query(shadowRoot: ShadowRoot) {
+  return within(shadowRoot as unknown as HTMLElement);
 }
 
 afterEach(() => {
   act(() => mounted?.unmount());
   mounted = undefined;
+  vi.useRealTimers();
 });
 
 describe("widget (smoke)", () => {
   it("renders the challenge checkbox inside a shadow root", async () => {
-    const { host, shadowRoot } = await mount();
+    const onCheck = vi.fn();
+    const { host, shadowRoot } = await mount({ onCheck });
     expect(host.tagName.toLowerCase()).toBe(HOST_TAG);
 
-    const ui = within(shadowRoot as unknown as HTMLElement);
-    const checkbox = ui.getByRole("checkbox", { name: /not a robot/i });
+    const checkbox = query(shadowRoot).getByRole("checkbox", { name: /not a robot/i });
     expect(checkbox).not.toBeChecked();
 
     await userEvent.click(checkbox);
     expect(checkbox).toBeChecked();
+    expect(onCheck).toHaveBeenCalledOnce();
     // Nothing leaks into the light DOM.
     expect(document.body.querySelector("[role=checkbox]")).toBeNull();
+  });
+
+  it("sends the collected signals, the click included, as soon as the checkbox is ticked", async () => {
+    // Fake the batcher's interval so it cannot fire between mount and click. Only setInterval:
+    // React and user-event schedule work with setTimeout.
+    vi.useFakeTimers({ toFake: ["setInterval", "clearInterval"] });
+    const send = vi.fn<SignalTransport["send"]>(() => Promise.resolve());
+    const { shadowRoot } = await mount({ signalTransport: { send } });
+    expect(send).not.toHaveBeenCalled();
+
+    await userEvent.click(query(shadowRoot).getByRole("checkbox", { name: /not a robot/i }));
+
+    expect(send).toHaveBeenCalledOnce();
+    const [batch, options] = send.mock.calls[0]!;
+    expect(batch.signals.map((s) => s.type)).toContain("env");
+    expect(batch.signals.at(-1)?.type).toBe("click");
+    expect(options).toEqual({ keepalive: false });
   });
 
   it("injects the compiled CSS into the shadow root, not document.head", async () => {
@@ -42,13 +70,153 @@ describe("widget (smoke)", () => {
   });
 
   it("renders popover portals inside the shadow root", async () => {
-    const { shadowRoot } = await mount();
-    const ui = within(shadowRoot as unknown as HTMLElement);
+    // The widget has no popover right now; check the portal plumbing directly.
+    const host = document.body.appendChild(document.createElement("div"));
+    const shadowRoot = host.attachShadow({ mode: "open" });
+    const app = shadowRoot.appendChild(document.createElement("div"));
+    const portal = shadowRoot.appendChild(document.createElement("div"));
+    portal.dataset.cursoraPortal = "";
+    const root = createRoot(app);
+    act(() =>
+      root.render(
+        <StrictMode>
+          <PortalContainerProvider value={portal}>
+            <Popover>
+              <PopoverTrigger>About</PopoverTrigger>
+              <PopoverContent>Popover body</PopoverContent>
+            </Popover>
+          </PortalContainerProvider>
+        </StrictMode>,
+      ),
+    );
 
-    await userEvent.click(ui.getByRole("button", { name: /about this check/i }));
+    await userEvent.click(query(shadowRoot).getByRole("button", { name: "About" }));
 
-    const content = await ui.findByText("Protected by Cursora.");
+    const content = await query(shadowRoot).findByText("Popover body");
     expect(content.closest("[data-cursora-portal]")).not.toBeNull();
-    expect(within(document.body).queryByText("Protected by Cursora.")).toBeNull();
+    expect(within(document.body).queryByText("Popover body")).toBeNull();
+    act(() => root.unmount());
+    host.remove();
+  });
+});
+
+describe("widget states", () => {
+  it.each([
+    [{ state: "verifying" } as const, "Security check"],
+    [{ state: "checkbox" } as const, "Quick security check"],
+    [{ state: "loading" } as const, "Checking your browser"],
+    [{ state: "verified" } as const, "Access restored"],
+    [{ state: "failed", attempt: 2, maxAttempts: 3 } as const, "Verification failed"],
+    [{ state: "blocked", retryInMinutes: 14 } as const, "Temporarily blocked"],
+  ])("renders %o with its title", async (view, title) => {
+    const { shadowRoot } = await mount({ view });
+    expect(query(shadowRoot).getByRole("heading", { name: title })).toBeInTheDocument();
+  });
+
+  it("shows nothing when hidden (allow)", async () => {
+    const { shadowRoot } = await mount({ view: { state: "hidden" } });
+    expect(shadowRoot.querySelector("[data-state]")).toBeNull();
+  });
+
+  it("dims the page only when the answer failed or the visitor is blocked", async () => {
+    const widget = await mount();
+    const backdrop = () => widget.shadowRoot.querySelector("[data-cursora-backdrop]");
+    expect(backdrop()).toBeNull();
+
+    act(() => widget.setView({ state: "failed", attempt: 2, maxAttempts: 3 }));
+    expect(backdrop()).not.toBeNull();
+
+    act(() => widget.setView({ state: "blocked", retryInMinutes: 14 }));
+    expect(backdrop()).not.toBeNull();
+
+    act(() => widget.setView({ state: "checkbox" }));
+    expect(backdrop()).toBeNull();
+  });
+
+  it("is modal while the page is dimmed: the page is inert and focus moves into the widget", async () => {
+    const page = document.body.appendChild(document.createElement("button"));
+    page.textContent = "Page button";
+    page.focus();
+    const widget = await mount();
+    const dialog = () => query(widget.shadowRoot).queryByRole("dialog");
+    expect(dialog()).toBeNull();
+    expect(page).not.toHaveAttribute("inert");
+
+    act(() => widget.setView({ state: "blocked", retryInMinutes: 14 }));
+    expect(dialog()).toHaveAttribute("aria-modal", "true");
+    expect(dialog()).toHaveAccessibleName("Temporarily blocked");
+    expect(page).toHaveAttribute("inert");
+    expect(widget.host).not.toHaveAttribute("inert");
+    expect(widget.shadowRoot.activeElement).toBe(dialog());
+
+    act(() => widget.setView({ state: "checkbox" }));
+    expect(dialog()).toBeNull();
+    expect(page).not.toHaveAttribute("inert");
+    expect(document.activeElement).toBe(page);
+    page.remove();
+  });
+
+  it("keeps keyboard focus in the widget when a modal state's action changes the view", async () => {
+    const backToCheckbox = () => mounted?.setView({ state: "checkbox" });
+    const widget = await mount({ onTryAgain: backToCheckbox, onRetry: backToCheckbox });
+    const ui = query(widget.shadowRoot);
+    const checkbox = () => ui.getByRole("checkbox", { name: /not a robot/i });
+
+    act(() => widget.setView({ state: "failed", attempt: 2, maxAttempts: 3 }));
+    await userEvent.click(ui.getByRole("button", { name: "Try again" }));
+    // The clicked button was unmounted by the view change: focus lands on the new view's control,
+    // not on the non-focusable shadow host or <body>.
+    expect(widget.shadowRoot.activeElement).toBe(checkbox());
+
+    act(() => widget.setView({ state: "blocked", retryInMinutes: 14 }));
+    await userEvent.click(ui.getByRole("button", { name: "Retry" }));
+    expect(widget.shadowRoot.activeElement).toBe(checkbox());
+  });
+
+  it("sits in the corner, except the block, which is centred", async () => {
+    const widget = await mount();
+    const placement = () =>
+      widget.shadowRoot.querySelector<HTMLElement>("[data-placement]")?.dataset.placement;
+    expect(placement()).toBe("corner");
+
+    act(() => widget.setView({ state: "failed", attempt: 2, maxAttempts: 3 }));
+    expect(placement()).toBe("corner");
+
+    act(() => widget.setView({ state: "blocked", retryInMinutes: 14 }));
+    expect(placement()).toBe("center");
+  });
+
+  it("switches views with setView", async () => {
+    const widget = await mount();
+    act(() => widget.setView({ state: "verified" }));
+    expect(query(widget.shadowRoot).getByText("You're verified")).toBeInTheDocument();
+  });
+
+  it("reports the failed state's actions", async () => {
+    const onTryAgain = vi.fn();
+    const onTryAnotherWay = vi.fn();
+    const { shadowRoot } = await mount({
+      view: { state: "failed", attempt: 2, maxAttempts: 3 },
+      onTryAgain,
+      onTryAnotherWay,
+    });
+    const ui = query(shadowRoot);
+    expect(ui.getByText("Attempt 2 of 3")).toBeInTheDocument();
+    expect(ui.getByText(/One retry remains/)).toBeInTheDocument();
+
+    await userEvent.click(ui.getByRole("button", { name: "Try again" }));
+    await userEvent.click(ui.getByRole("button", { name: "Try another way" }));
+    expect(onTryAgain).toHaveBeenCalledOnce();
+    expect(onTryAnotherWay).toHaveBeenCalledOnce();
+  });
+
+  it("shows the block duration and reports retry", async () => {
+    const onRetry = vi.fn();
+    const { shadowRoot } = await mount({ view: { state: "blocked", retryInMinutes: 14 }, onRetry });
+    const ui = query(shadowRoot);
+    expect(ui.getByText("Try again in 14 minutes")).toBeInTheDocument();
+
+    await userEvent.click(ui.getByRole("button", { name: "Retry" }));
+    expect(onRetry).toHaveBeenCalledOnce();
   });
 });
