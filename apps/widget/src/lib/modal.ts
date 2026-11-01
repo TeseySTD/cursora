@@ -15,6 +15,7 @@ export function useModal(ref: RefObject<HTMLElement | null>, active: boolean) {
 
     const doc = dialog.ownerDocument;
     const root = dialog.getRootNode();
+    const previousFocus = doc.activeElement;
     const madeInert: Element[] = [];
     let node: Element = root instanceof ShadowRoot ? root.host : dialog;
     while (node !== doc.body && node.parentElement) {
@@ -26,7 +27,6 @@ export function useModal(ref: RefObject<HTMLElement | null>, active: boolean) {
       }
       node = node.parentElement;
     }
-
     const previousFocus = doc.activeElement;
     dialog.focus({ preventScroll: true });
 
