@@ -126,7 +126,9 @@ export function FailedState({
         </p>
         <div className="flex items-center justify-between">
           <LinkButton onClick={onTryAnotherWay}>Try another way</LinkButton>
-          <PrimaryButton disabled={retriesLeft <= 0} onClick={onTryAgain}>Try again</PrimaryButton>
+          <PrimaryButton disabled={retriesLeft <= 0} onClick={onTryAgain}>
+            Try again
+          </PrimaryButton>
         </div>
         <LinkButton className="self-start" onClick={onContactSupport}>
           Contact support

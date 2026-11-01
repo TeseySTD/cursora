@@ -6,6 +6,9 @@ import type { ComponentProps, ReactNode } from "react";
 const PRIVACY_URL = "#";
 const SECURITY_URL = "#";
 
+/** Id of the card's title. Ids are scoped to the shadow root and one card renders at a time. */
+export const CARD_TITLE_ID = "cursora-title";
+
 /** The widget frame shared by every state: brand, title, shield badge, panel slot, footer. */
 export function WidgetCard({
   state,
@@ -26,7 +29,9 @@ export function WidgetCard({
       <header className="flex items-start justify-between gap-3">
         <div>
           <p className="text-[11px] leading-tight font-bold">Cursora</p>
-          <h2 className="text-xl leading-tight font-bold">{title}</h2>
+          <h2 id={CARD_TITLE_ID} className="text-xl leading-tight font-bold">
+            {title}
+          </h2>
         </div>
         <span className="grid size-[30px] shrink-0 place-items-center rounded-full border border-white/70 bg-white/60">
           <ShieldCheckIcon aria-hidden className="size-4" strokeWidth={1.75} />

@@ -10,8 +10,10 @@ function stubTransport() {
   return { transport: { send }, send };
 }
 
-function pointer(type: string, x: number, y: number) {
-  document.dispatchEvent(new MouseEvent(type, { clientX: x, clientY: y, bubbles: true }));
+function pointer(type: string, x: number, y: number, pointerType = "mouse") {
+  document.dispatchEvent(
+    new PointerEvent(type, { clientX: x, clientY: y, pointerType, bubbles: true }),
+  );
 }
 
 function move(signal: Signal) {
@@ -26,13 +28,13 @@ describe("collector", () => {
     const signals: Signal[] = [];
     const stop = startCollector(document, (s) => signals.push(s), { moveIntervalMs: 0 });
 
-    pointer("pointermove", 10, 20);
-    pointer("click", 30, 40);
+    pointer("pointermove", 10, 20, "pen");
+    pointer("click", 30, 40, "touch");
     stop();
 
     expect(signals.map((s) => s.type)).toEqual(["env", "move", "click"]);
-    expect(signals[1]).toMatchObject({ x: 10, y: 20 });
-    expect(signals[2]).toMatchObject({ x: 30, y: 40, button: 0 });
+    expect(signals[1]).toMatchObject({ x: 10, y: 20, pointer: "pen" });
+    expect(signals[2]).toMatchObject({ x: 30, y: 40, button: 0, pointer: "touch" });
   });
 
   it("samples pointer moves no more often than moveIntervalMs", () => {

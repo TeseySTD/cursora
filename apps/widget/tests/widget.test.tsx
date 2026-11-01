@@ -25,6 +25,7 @@ function query(shadowRoot: ShadowRoot) {
 afterEach(() => {
   act(() => mounted?.unmount());
   mounted = undefined;
+  vi.useRealTimers();
 });
 
 describe("widget (smoke)", () => {
@@ -44,6 +45,9 @@ describe("widget (smoke)", () => {
   });
 
   it("sends the collected signals, the click included, as soon as the checkbox is ticked", async () => {
+    // Fake the batcher's interval so it cannot fire between mount and click. Only setInterval:
+    // React and user-event schedule work with setTimeout.
+    vi.useFakeTimers({ toFake: ["setInterval", "clearInterval"] });
     const send = vi.fn<SignalTransport["send"]>(() => Promise.resolve());
     const { shadowRoot } = await mount({ signalTransport: { send } });
     expect(send).not.toHaveBeenCalled();
@@ -127,6 +131,29 @@ describe("widget states", () => {
 
     act(() => widget.setView({ state: "checkbox" }));
     expect(backdrop()).toBeNull();
+  });
+
+  it("is modal while the page is dimmed: the page is inert and focus moves into the widget", async () => {
+    const page = document.body.appendChild(document.createElement("button"));
+    page.textContent = "Page button";
+    page.focus();
+    const widget = await mount();
+    const dialog = () => query(widget.shadowRoot).queryByRole("dialog");
+    expect(dialog()).toBeNull();
+    expect(page).not.toHaveAttribute("inert");
+
+    act(() => widget.setView({ state: "blocked", retryInMinutes: 14 }));
+    expect(dialog()).toHaveAttribute("aria-modal", "true");
+    expect(dialog()).toHaveAccessibleName("Temporarily blocked");
+    expect(page).toHaveAttribute("inert");
+    expect(widget.host).not.toHaveAttribute("inert");
+    expect(widget.shadowRoot.activeElement).toBe(dialog());
+
+    act(() => widget.setView({ state: "checkbox" }));
+    expect(dialog()).toBeNull();
+    expect(page).not.toHaveAttribute("inert");
+    expect(document.activeElement).toBe(page);
+    page.remove();
   });
 
   it("sits in the corner, except the block, which is centred", async () => {

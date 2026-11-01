@@ -49,6 +49,15 @@ if (slot) {
     onContactSupport: () => console.debug("[cursora dev] contact support"),
   });
 
+  // The widget makes the rest of the page inert while it is modal (failed, blocked); keep the
+  // dev switcher usable so the states can still be switched.
+  if (switcher) {
+    new MutationObserver(() => switcher.removeAttribute("inert")).observe(switcher, {
+      attributes: true,
+      attributeFilter: ["inert"],
+    });
+  }
+
   for (const [label, view] of Object.entries(VIEWS)) {
     const button = document.createElement("button");
     button.type = "button";
