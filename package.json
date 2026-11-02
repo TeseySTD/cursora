@@ -43,6 +43,7 @@
     "docker:build": "node scripts/compose.mjs prod build",
     "docker:config": "node scripts/compose.mjs prod config --quiet",
     "docker:nginx-test": "node scripts/compose.mjs prod run --rm --no-deps nginx nginx -t",
+    "skills:outdated": "node scripts/skills-outdated.mjs",
     "ml:notebook": "uv run --package cursora-ml --group notebook jupyter lab --notebook-dir ml/notebooks",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm api:check"
   },

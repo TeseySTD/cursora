@@ -189,7 +189,8 @@ Pinned commits and review notes are in each skill's `SOURCE.md`.
 
 Third-party skills are vendored copies pinned to a commit, each with its upstream `LICENSE` and a
 `SOURCE.md` (origin, commit, review notes, local modifications). Update them only by re-importing
-from upstream and reviewing the diff; never edit them in place. New third-party skills need the
+from upstream and reviewing the diff; never edit them in place. `pnpm skills:outdated` lists the
+skills whose upstream folder changed after the pinned commit. New third-party skills need the
 same review: read every file, reject hidden instructions, `allowed-tools` grants, dynamic-context
 commands that run on load, network calls and telemetry. Check skills with
 `claude plugin validate .claude --strict`.
