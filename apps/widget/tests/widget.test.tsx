@@ -174,14 +174,14 @@ describe("widget states", () => {
     await waitFor(() => expect(widget.shadowRoot.activeElement).toBe(checkbox()));
   });
 
-  it("sits in the corner, except the block, which is centred", async () => {
+  it("sits in the corner, except the modal states (failed, blocked), which are centred", async () => {
     const widget = await mount();
     const placement = () =>
       widget.shadowRoot.querySelector<HTMLElement>("[data-placement]")?.dataset.placement;
     expect(placement()).toBe("corner");
 
     act(() => widget.setView({ state: "failed", attempt: 2, maxAttempts: 3 }));
-    expect(placement()).toBe("corner");
+    expect(placement()).toBe("center");
 
     act(() => widget.setView({ state: "blocked", retryInMinutes: 14 }));
     expect(placement()).toBe("center");

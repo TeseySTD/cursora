@@ -51,11 +51,11 @@ export function Widget({ siteKey, view, ...actions }: WidgetProps) {
 
   if (view.state === "hidden") return null;
 
-  // The block is centred on the page; every other state sits in the bottom-right corner.
-  const placement =
-    view.state === "blocked"
-      ? "inset-0 grid place-items-center p-4"
-      : "right-4 bottom-4 max-w-[calc(100vw-2rem)]";
+  // Modal states (the page is dimmed) are centred on the page; every other state sits in the
+  // bottom-right corner.
+  const placement = dimmed
+    ? "inset-0 grid place-items-center p-4"
+    : "right-4 bottom-4 max-w-[calc(100vw-2rem)]";
 
   return (
     <div data-site-key={siteKey}>
@@ -68,7 +68,7 @@ export function Widget({ siteKey, view, ...actions }: WidgetProps) {
       )}
       <div
         ref={dialogRef}
-        data-placement={view.state === "blocked" ? "center" : "corner"}
+        data-placement={dimmed ? "center" : "corner"}
         className={`fixed z-[2147483647] outline-none ${placement}`}
         {...(dimmed && {
           role: "dialog",
