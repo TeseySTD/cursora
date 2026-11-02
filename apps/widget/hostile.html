@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cursora widget — dev harness</title>
+    <!--
+      Simulated third-party host page with deliberately hostile CSS.
+      The widget must look the same as without these rules, and the
+      host's own elements below must keep this styling (no leak outwards).
+    -->
+    <style>
+      html {
+        font-size: 10px;
+      }
+      * {
+        box-sizing: content-box !important;
+        font-family: "Comic Sans MS", cursive;
+        color: crimson;
+      }
+      body {
+        background: #fffbe6;
+        line-height: 3;
+        letter-spacing: 0.2em;
+        padding: 2rem;
+      }
+      div,
+      label {
+        border: 3px dashed royalblue;
+        padding: 12px;
+      }
+      button {
+        background: hotpink;
+        padding: 30px;
+        border-radius: 0;
+      }
+      input[type="checkbox"] {
+        width: 40px;
+        height: 40px;
+      }
+      [role="checkbox"] {
+        transform: rotate(20deg);
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Host page</h1>
+    <p>Host button and checkbox (must stay hot pink / huge):</p>
+    <button type="button">Host button</button>
+    <label><input type="checkbox" /> Host checkbox</label>
+
+    <h2>Widget</h2>
+    <!-- In production a site embeds:
+         <script src="https://<cursora-host>/widget/widget.js" data-site-key="..."></script> -->
+    <div id="cursora-slot"></div>
+    <script type="module" src="/src/dev.tsx"></script>
+  </body>
+</html>

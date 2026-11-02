@@ -1,44 +1,116 @@
-import { useState } from "react";
+import { useRef } from "react";
 
-import { Checkbox } from "@/components/ui/checkbox";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-
-export interface WidgetProps {
-  siteKey: string;
-}
+import { CARD_TITLE_ID } from "@/components/card";
+import {
+  BlockedState,
+  CheckboxState,
+  FailedState,
+  LoadingState,
+  VerifiedState,
+  VerifyingState,
+} from "@/components/states";
+import { useModal } from "@/lib/modal";
 
 /**
- * Placeholder UI: renders the "challenge" state (checkbox).
+ * What the widget shows. "hidden" is the `allow` decision: the visitor sees nothing.
  *
- * TODO(team): widget state machine (collecting signals / challenge / route drag / passed /
- * blocked), copy and i18n, and talking to the API with `siteKey`.
+ * TODO(team): who drives these transitions (session state / decision from the API) and the
+ * attempt limit and block duration; for now the host of `mountWidget` sets the view.
  */
-export function Widget({ siteKey }: WidgetProps) {
-  const [checked, setChecked] = useState(false);
+export type WidgetView =
+  | { state: "hidden" }
+  | { state: "verifying" }
+  | { state: "checkbox" }
+  | { state: "loading" }
+  | { state: "verified" }
+  | { state: "failed"; attempt: number; maxAttempts: number }
+  | { state: "blocked"; retryInMinutes: number };
+
+/** Visitor actions the widget reports. */
+export interface WidgetActions {
+  onCheck?: () => void;
+  onTryAgain?: () => void;
+  onTryAnotherWay?: () => void;
+  onRetry?: () => void;
+  onContactSupport?: () => void;
+}
+
+export interface WidgetProps extends WidgetActions {
+  siteKey: string;
+  view: WidgetView;
+}
+
+export function Widget({ siteKey, view, ...actions }: WidgetProps) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  // A failed answer or a block dims the page around the widget. The backdrop is a sibling of the
+  // card, not inside it: the card's backdrop-filter would make it the containing block of `fixed`.
+  const dimmed = view.state === "failed" || view.state === "blocked";
+  // The backdrop blocks the mouse; the widget is then modal so keyboard and screen readers
+  // cannot reach the page underneath either.
+  useModal(dialogRef, dimmed);
+
+  if (view.state === "hidden") return null;
+
+  // Every state is centred on the page. Only the modal states (page dimmed) capture the pointer
+  // over the whole viewport; for the others the layer is click-through, so the host page stays
+  // usable around the card.
+  const placement = dimmed
+    ? "inset-0 grid place-items-center p-4"
+    : "pointer-events-none inset-0 grid place-items-center p-4 [&>*]:pointer-events-auto";
 
   return (
-    <div
-      data-state="challenge"
-      data-site-key={siteKey}
-      className="bg-background text-foreground inline-flex items-center gap-3 rounded-md border p-3 text-sm shadow-sm"
-    >
-      <Checkbox
-        id="cursora-checkbox"
-        checked={checked}
-        onCheckedChange={(value) => setChecked(value === true)}
-      />
-      <label htmlFor="cursora-checkbox" className="cursor-pointer select-none">
-        I&apos;m not a robot
-      </label>
-      <Popover>
-        <PopoverTrigger
-          aria-label="About this check"
-          className="text-muted-foreground hover:text-foreground ml-2 size-5 rounded-full border text-xs"
-        >
-          ?
-        </PopoverTrigger>
-        <PopoverContent className="w-56 text-xs">Protected by Cursora.</PopoverContent>
-      </Popover>
+    <div data-site-key={siteKey}>
+      {dimmed && (
+        <div
+          data-cursora-backdrop=""
+          aria-hidden
+          className="animate-in fade-in fixed inset-0 z-[2147483646] bg-slate-950/55"
+        />
+      )}
+      <div
+        ref={dialogRef}
+        data-cursora-layer={dimmed ? "modal" : "passive"}
+        className={`fixed z-[2147483647] outline-none ${placement}`}
+        {...(dimmed && {
+          role: "dialog",
+          "aria-modal": true,
+          "aria-labelledby": CARD_TITLE_ID,
+          tabIndex: -1,
+        })}
+      >
+        {renderView(view, actions)}
+      </div>
     </div>
   );
+}
+
+function renderView(view: WidgetView, actions: WidgetActions) {
+  switch (view.state) {
+    case "verifying":
+      return <VerifyingState />;
+    case "checkbox":
+      return <CheckboxState onCheck={actions.onCheck} />;
+    case "loading":
+      return <LoadingState />;
+    case "verified":
+      return <VerifiedState />;
+    case "failed":
+      return (
+        <FailedState
+          attempt={view.attempt}
+          maxAttempts={view.maxAttempts}
+          onTryAgain={actions.onTryAgain}
+          onTryAnotherWay={actions.onTryAnotherWay}
+          onContactSupport={actions.onContactSupport}
+        />
+      );
+    case "blocked":
+      return (
+        <BlockedState
+          retryInMinutes={view.retryInMinutes}
+          onRetry={actions.onRetry}
+          onContactSupport={actions.onContactSupport}
+        />
+      );
+  }
 }
