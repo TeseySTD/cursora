@@ -1,4 +1,5 @@
-import { act, within } from "@testing-library/react";
+import { waitFor, within } from "@testing-library/react";
+import { act } from "preact/test-utils";
 import userEvent from "@testing-library/user-event";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
@@ -166,11 +167,11 @@ describe("widget states", () => {
     await userEvent.click(ui.getByRole("button", { name: "Try again" }));
     // The clicked button was unmounted by the view change: focus lands on the new view's control,
     // not on the non-focusable shadow host or <body>.
-    expect(widget.shadowRoot.activeElement).toBe(checkbox());
+    await waitFor(() => expect(widget.shadowRoot.activeElement).toBe(checkbox()));
 
     act(() => widget.setView({ state: "blocked", retryInMinutes: 14 }));
     await userEvent.click(ui.getByRole("button", { name: "Retry" }));
-    expect(widget.shadowRoot.activeElement).toBe(checkbox());
+    await waitFor(() => expect(widget.shadowRoot.activeElement).toBe(checkbox()));
   });
 
   it("sits in the corner, except the block, which is centred", async () => {
