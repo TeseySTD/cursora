@@ -108,7 +108,7 @@ export function FailedState({
     <WidgetCard state="failed" title="Verification failed">
       <Panel role="alert" className="flex flex-col gap-3">
         <div className="flex items-center gap-3">
-          <IconBadge className="border-cursora-danger text-cursora-danger size-8">
+          <IconBadge tone="danger" className="size-8">
             <XIcon className="size-4" strokeWidth={1.5} />
           </IconBadge>
           <div>
@@ -151,7 +151,7 @@ export function BlockedState({
     <WidgetCard state="blocked" title="Temporarily blocked">
       <Panel role="alert" className="flex flex-col gap-3">
         <div className="flex items-center gap-3">
-          <IconBadge className="border-cursora-danger text-cursora-danger size-8">
+          <IconBadge tone="danger" className="size-8">
             <ClockIcon className="size-4" strokeWidth={1.5} />
           </IconBadge>
           <div>

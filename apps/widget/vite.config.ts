@@ -78,7 +78,18 @@ export default defineConfig(({ command, mode }) => ({
     environment: "jsdom",
     alias: { "lucide-react": lucideEsm },
     // Deps are externalized by default, which would bypass the react -> preact aliases.
-    server: { deps: { inline: [/radix-ui/, /@radix-ui/, /@floating-ui/, /lucide-react/, /@testing-library/, /use-sync-external-store/] } },
+    server: {
+      deps: {
+        inline: [
+          /radix-ui/,
+          /@radix-ui/,
+          /@floating-ui/,
+          /lucide-react/,
+          /@testing-library/,
+          /use-sync-external-store/,
+        ],
+      },
+    },
     setupFiles: ["./tests/setup.ts"],
     // Process `styles.css?inline` in tests so we can assert what lands in the shadow root.
     css: { include: [/.+/] },

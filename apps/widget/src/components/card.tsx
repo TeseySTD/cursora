@@ -1,4 +1,4 @@
-import { cn } from "cn";
+import { cn } from "@/lib/utils";
 import { ShieldCheckIcon } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
 
@@ -65,12 +65,19 @@ export function Panel({ className, ...props }: ComponentProps<"div">) {
 }
 
 /** Round icon badge used by the status panels. */
-export function IconBadge({ className, ...props }: ComponentProps<"span">) {
+export function IconBadge({
+  tone = "default",
+  className,
+  ...props
+}: ComponentProps<"span"> & { tone?: "default" | "danger" }) {
   return (
     <span
       aria-hidden
       className={cn(
-        "grid shrink-0 place-items-center rounded-full border border-white bg-white/80",
+        "grid shrink-0 place-items-center rounded-full border",
+        tone === "danger"
+          ? "border-cursora-danger text-cursora-danger bg-white/80"
+          : "border-white bg-white/80",
         className,
       )}
       {...props}
