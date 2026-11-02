@@ -15,6 +15,7 @@
   "dependencies": {
     "cn": "^0.5.0",
     "lucide-react": "^1.60.0",
+    "preact": "10.29.8",
     "radix-ui": "^1.8.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
