@@ -12,7 +12,7 @@ dependencies = [
 [dependency-groups]
 dev = ["pytest>=9.1.1"]
 # Not installed by `pnpm bootstrap`; enabled on demand by `pnpm ml:notebook`.
-notebook = ["jupyterlab>=4.6.4"]
+notebook = ["marimo>=0.25.2"]
 
 [tool.uv.sources]
 cursora-features = { workspace = true }

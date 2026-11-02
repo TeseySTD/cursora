@@ -35,7 +35,7 @@ All tasks are root `package.json` scripts; run them from the repo root.
 | `pnpm api:check`                                  | Fail if the committed `openapi.json` differs from the FastAPI export              |
 | `pnpm docker:up` / `docker:down` / `docker:build` | Full stack in Docker                                                              |
 | `pnpm docker:config` / `docker:nginx-test`        | Validate the Compose files / the Nginx config                                     |
-| `pnpm ml:notebook`                                | JupyterLab in `ml/notebooks`                                                      |
+| `pnpm ml:notebook`                                | marimo editor in `ml/notebooks`                                                   |
 | `pnpm check`                                      | format:check + lint + typecheck + test + api:check — run before every PR          |
 
 Integration tests (`apps/api/tests/integration`) need Postgres (`pnpm db:up`). Without it
