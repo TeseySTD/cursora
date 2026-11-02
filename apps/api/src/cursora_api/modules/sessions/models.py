@@ -26,13 +26,15 @@ class WidgetSession(Base):
     reused: an expired session stays in the table, so its id can never belong to another one.
 
     TODO(team): link the session to a site once the tenant module defines sites.
+    TODO(team): rate limit for anonymous creation and retention of expired rows.
     """
 
     __tablename__ = "widget_sessions"
 
     id: Mapped[str] = mapped_column(String(SESSION_ID_MAX_LENGTH), primary_key=True)
     state: Mapped[SessionState] = mapped_column(
-        # VARCHAR + CHECK instead of a native enum: adding a state is a one-line migration.
+        # VARCHAR + CHECK instead of a native enum. Autogenerate does not detect a new state: add
+        # it with a manual migration that drops and recreates ck_widget_sessions_state.
         Enum(
             SessionState,
             name="state",

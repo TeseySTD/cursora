@@ -21,6 +21,8 @@ if (script instanceof HTMLScriptElement) {
         if (session.state === "challenge_required") widget.setView({ state: "checkbox" });
       })
       .catch((error: unknown) => {
+        // TODO(team): fail-open or fail-closed? For now the widget stays hidden (fail-open),
+        // and there is no request timeout.
         console.error("[cursora] could not open a session", error);
       });
   } else {
