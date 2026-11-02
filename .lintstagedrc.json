@@ -1,0 +1,4 @@
+{
+  "*.py": ["uv run ruff check --fix --force-exclude", "uv run ruff format --force-exclude"],
+  "*": "prettier --write --ignore-unknown"
+}
