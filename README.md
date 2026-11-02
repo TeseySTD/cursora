@@ -52,7 +52,9 @@ Instructions for AI coding agents live in [AGENTS.md](AGENTS.md) (Claude Code re
 - **Claude Code**: shared permissions in `.claude/settings.json`, project skills in
   `.claude/skills/` (listed in AGENTS.md) and an optional
   [Playwright MCP](https://github.com/microsoft/playwright-mcp) server in `.mcp.json` (localhost
-  only; approve it once). Personal settings go in `.claude/settings.local.json` and
+  only; approve it once). It runs the `@playwright/mcp` version pinned in the root
+  `package.json` through `pnpm exec`, so it needs `pnpm bootstrap` first and Dependabot keeps it
+  up to date. Personal settings go in `.claude/settings.local.json` and
   `CLAUDE.local.md`, which are git-ignored.
 - **OpenSpec**: spec-driven changes with `/opsx:propose`, `/opsx:apply` and `/opsx:archive`.
   Install the team's version with `npm i -g @fission-ai/openspec@1.10.0` and opt out of its

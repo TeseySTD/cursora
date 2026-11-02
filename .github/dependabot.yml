@@ -38,6 +38,9 @@ updates:
         exclude-patterns:
           # Exact-pinned 0.x generator of the API client: review its updates on their own.
           - "@hey-api/*"
+          # Exact-pinned 0.x Playwright MCP server that runs on every dev machine (.mcp.json):
+          # review its updates on their own.
+          - "@playwright/mcp"
         update-types:
           - "minor"
           - "patch"
