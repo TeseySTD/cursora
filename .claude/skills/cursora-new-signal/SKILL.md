@@ -13,8 +13,9 @@ Read BR-5..BR-7 and BR-32..BR-40 in `docs/project-context.md` first.
 The signal set is proposed, not final (BR-7, OQ-15): pointer/touch movement, clicks and pauses,
 time on page, browser and device parameters (widget); IP, User-Agent and request rate (server or
 Nginx). Anything else, or any change in how a listed signal is collected, needs a team decision —
-ask, or leave `TODO(team): ... (OQ-15)`. Prefer an OpenSpec change (`/opsx:propose`) for new
-signals.
+ask, or leave `TODO(team): ... (OQ-15)`. You can plan a new signal with an OpenSpec change
+(`/opsx:propose`), but specs are local and git-ignored: record the agreed signal and how it is
+collected in `docs/project-context.md` (BR-7) in the same PR, so the team sees the decision.
 
 ## 1. Widget (`apps/widget`)
 

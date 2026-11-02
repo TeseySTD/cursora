@@ -10,6 +10,10 @@ requirements, OQ-n open questions). This skill is the working summary; when in d
 cited section there. Statuses in that document: **Decided** and **Repo** items are settled;
 **Proposed** and **Open** items are not.
 
+Synced with `docs/project-context.md` on 2026-11-02. The concrete values below (attempts, block
+durations, rate limits, token lifetime, retention periods) are copies; if they differ from the
+document, the document wins: use its value and update this skill and the date.
+
 ## Golden rule
 
 Never settle an open point in code. No invented thresholds, weights, score ranges, lifetimes,
@@ -128,4 +132,4 @@ keep the code working without the value (configurable or clearly stubbed), and t
 - Does the change match a Decided rule? Cite it (BR-n) in the PR description.
 - Does it depend on an Open question? Leave `TODO(team) ... (OQ-n)` and say so in the PR.
 - If the team decided something new in the chat or a meeting, update `docs/project-context.md`
-  in the same PR.
+  in the same PR, and this skill (with its sync date) if a rule or value above changed.
