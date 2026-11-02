@@ -47,8 +47,9 @@ Every change is tied to a Jira issue with the key `CAPTHCA-<n>`.
 
 1. Branch from `main`: `<type>/CAPTHCA-<n>-<short-slug>`, e.g. `feat/CAPTHCA-12-site-settings`.
    Types: `feat`, `fix`, `chore`, `docs`, `refactor`, `test`, `ci`.
-2. Small commits with English messages in [Conventional Commits](https://www.conventionalcommits.org/)
-   style: `feat(api): add sites repository`.
+2. Small commits with English messages, in either
+   [Conventional Commits](https://www.conventionalcommits.org/) style,
+   `feat(api): add sites repository`, or with the Jira key, `CAPTHCA-12: Add sites repository`.
 3. Run `pnpm check`. If you changed the API, run `pnpm api:openapi` and commit
    `packages/api-client/openapi.json`. The TS client in `packages/api-client/src/generated` is
    not committed: it is generated from `openapi.json` on `pnpm install` and before the admin

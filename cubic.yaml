@@ -47,7 +47,8 @@ reviews:
     fingerprint in logs, database columns, API responses, error messages or test fixtures.
     PostgreSQL is the only datastore: flag Redis or any other cache or queue.
     Flag committed secrets or real credentials (code, .env.example, compose files, workflows).
-    PR titles follow `CAPTHCA-<n>: summary`; commits follow Conventional Commits.
+    PR titles follow `CAPTHCA-<n>: summary`; commits follow either Conventional Commits or
+    `CAPTHCA-<n>: summary`, both are accepted.
   ignore:
     files:
       - pnpm-lock.yaml

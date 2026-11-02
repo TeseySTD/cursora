@@ -219,8 +219,9 @@ Where a third-party skill's generic advice conflicts with this repo, the repo wi
 - Every change is tied to a Jira issue `CAPTHCA-<n>`. Never invent the number; ask for it.
 - Branch from `main`: `<type>/CAPTHCA-<n>-<short-slug>` (types: `feat`, `fix`, `chore`, `docs`,
   `refactor`, `test`, `ci`).
-- Commits: English, [Conventional Commits](https://www.conventionalcommits.org/), small and
-  focused, e.g. `feat(api): add sites repository`.
+- Commits: English, small and focused, in either of two formats:
+  [Conventional Commits](https://www.conventionalcommits.org/), e.g.
+  `feat(api): add sites repository`, or the Jira key, e.g. `CAPTHCA-12: Add sites repository`.
 - PR title `CAPTHCA-<n>: <summary>`; fill in `.github/pull_request_template.md`. CI (`ci-ok`) must
   be green and at least one CODEOWNERS review approved before merging.
 - The [cubic](https://www.cubic.dev) bot reviews every non-draft PR against this file and

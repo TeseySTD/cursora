@@ -1,6 +1,6 @@
 ---
 name: cursora-git-workflow
-description: Cursora team conventions for branches, commits and pull requests — Jira keys like CAPTHCA-12, branch names like feat/CAPTHCA-12-site-settings, Conventional Commits, PR titles that start with the Jira key, the PR template checklist, pnpm check and CODEOWNERS review. Use when creating a branch, writing a commit message, preparing, titling or describing a pull request, or deciding whether a change is ready to merge.
+description: Cursora team conventions for branches, commits and pull requests — Jira keys like CAPTHCA-12, branch names like feat/CAPTHCA-12-site-settings, PR titles that start with the Jira key, commits in Conventional Commits or `CAPTHCA-<n>:` form, the PR template checklist, pnpm check and CODEOWNERS review. Use when creating a branch, writing a commit message, preparing, titling or describing a pull request, or deciding whether a change is ready to merge.
 ---
 
 # Cursora git workflow
@@ -17,12 +17,16 @@ not given one, ask for it (or leave `CAPTHCA-<n>` as a visible placeholder for t
 
 ## Commits
 
-- English, [Conventional Commits](https://www.conventionalcommits.org/):
-  `<type>(<scope>): <imperative summary>` — e.g. `feat(api): add sites repository`.
-- Standard types: `feat`, `fix`, `docs`, `chore`, `ci`, `build`, `refactor`, `test`, `perf`.
-- Scopes follow the area touched, as in the existing history: `api`, `widget`, `admin`,
-  `api-client`, `features`, `ml`, `infra`, `dev`, `github`, `python`. Omit the scope for
-  repo-wide changes.
+- English, in either of two formats; both are used on `main`:
+  - [Conventional Commits](https://www.conventionalcommits.org/):
+    `<type>(<scope>): <imperative summary>` — e.g. `feat(api): add sites repository`.
+    Standard types: `feat`, `fix`, `docs`, `chore`, `ci`, `build`, `refactor`, `test`, `perf`.
+    Scopes follow the area touched, as in the existing history: `api`, `widget`, `admin`,
+    `api-client`, `features`, `ml`, `infra`, `dev`, `github`, `python`. Omit the scope for
+    repo-wide changes.
+  - The Jira key: `CAPTHCA-<n>: <Imperative summary>` — e.g. `CAPTHCA-12: Add sites repository`.
+- Follow the format the branch already uses; if the user has not said, use Conventional
+  Commits.
 - Small, focused commits. Do not mix formatting-only changes with behaviour changes.
 - Only commit or push when the user asks you to.
 
