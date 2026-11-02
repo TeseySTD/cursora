@@ -11,9 +11,11 @@ register their sites, embed the Cursora widget and verify its result on their ba
 Cursora API. The widget passively collects behavioural signals, a FastAPI backend scores them with
 a deterministic risk engine (optionally assisted by an ML score) and decides allow / challenge /
 block, and after a pass the widget puts a short-lived token into the form that the site's backend
-verifies with its secret key. Nginx is only a reverse proxy; the `auth_request` gate
-(`GET /v1/gate/check`) left in the repo from the earlier design is not an integration path, and
-whether its code is removed is an open question.
+verifies with its secret key ([ADR 0002](docs/adr/0002-token-verification-integration.md)).
+Only actions such as form submissions are protected, never page views. Nginx is only a reverse
+proxy; the `auth_request` gate (`GET /v1/gate/check`) left in the repo from the earlier design is
+not an integration path, and it is replaced as part of implementing token verification, not
+removed in a separate clean-up.
 
 - Business logic, requirements, decisions and open questions:
   [docs/project-context.md](docs/project-context.md). Read the relevant sections before changing
@@ -106,6 +108,9 @@ Run everything from the repo root through the root `package.json` scripts, the o
 - No business logic in Nginx: it only forwards to `/v1/gate/check` and acts on the status.
 - Fingerprints are stored and compared only as HMAC hashes. Never log, store or return raw
   fingerprints.
+- A raw client IP is stored only while its session lives; risk assessments keep only a /24
+  (IPv4) or /48 (IPv6) prefix. Keyed hashes are pseudonymisation, not anonymisation: never call stored data
+  anonymous.
 - PostgreSQL is the only datastore. No Redis or other caches or queues.
 - Do not invent product requirements, schemas, thresholds, weights or status codes. Leave
   `TODO(team): ...` where a team decision is needed, and check the open questions in

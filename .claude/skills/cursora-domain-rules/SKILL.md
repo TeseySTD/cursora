@@ -51,35 +51,53 @@ keep the code working without the value (configurable or clearly stubbed), and t
 
 - Graduated: invisible assessment -> checkbox -> (still suspicious) one interactive task ->
   final assessment (BR-13). The checkbox appears only when the server decides so (BR-10).
-- The MVP has exactly one interactive CAPTCHA type; which one is open (BR-15, BR-16, OQ-22).
-  A second type, random selection and "Try another way" are backlog, not MVP.
-- Pass/fail of the task is deterministic (correctness and completion time); speed, pauses,
-  corrections and trajectory are features for the risk engine/ML, not pass conditions (BR-17).
-- `human` passes, `suspicious` gets another attempt, `bot` is blocked temporarily; attempt limit
-  and block duration/scope are open (BR-18, BR-19, OQ-21, OQ-23).
+- The MVP has exactly one interactive task: draw a line without touching the shapes (BR-15,
+  BR-16). A second type, random selection and "Try another way" are backlog, not MVP.
+- Accessibility: the same task with the keyboard (arrow keys move an object along the route)
+  and a generous time limit (BR-41).
+- Pass/fail of the task is deterministic (correctness and completion time). Not touching the
+  shapes is part of correctness; speed, pauses and corrections are features for the risk
+  engine/ML, not pass conditions (BR-17). There is no minimum time; solving too fast is only a
+  feature. Geometry and tolerances are open (OQ-23).
+- Time limit: 2 minutes with a pointer to start with (later tuned to 99% of humans in the
+  dataset), ten times that with the keyboard (BR-17, BR-41).
+- `human` passes, `suspicious` gets another attempt, `bot` is blocked temporarily. A session has
+  5 attempts; once they are used up the visitor sees "try again later or contact the site
+  owner" (BR-18).
+- Every block (`bot`, a `block` decision, used-up attempts) lasts 15 minutes and applies to the
+  session only, never to the IP. The request rate per IP and /24 is a risk signal that leads to
+  a challenge; its values are open (BR-19, OQ-21).
 
-## Integration: tokens like reCAPTCHA (decided 2026-10-25)
+## Integration: tokens like reCAPTCHA (decided 2026-10-25, ADR 0002)
 
 - Site owners register sites and get a public site key (in the widget) and a secret key (for
-  their backend). Many customer sites from the start; Cursora runs no proxy in front of them.
+  their backend). Any number of customer sites; Cursora runs no proxy in front of them.
 - After `allow` or `human` the widget puts a short-lived verification token into the form; the
   site's backend sends it with the secret key to the Cursora verify API; each token is accepted
-  once (BR-25, BR-26). Token format and lifetime are open (OQ-14).
-- What the site's backend does when the verify API is unreachable is open (OQ-11).
+  once and lives 5 minutes, and the widget refreshes an expired token (BR-25, BR-26). Token
+  format and session binding are open (OQ-14).
+- Only actions are protected (e.g. `POST /login`), never page views; search crawlers are not
+  affected and scraping protection is outside the MVP (BR-42).
+- If the Cursora API is unreachable, customers are advised to let visitors through after one
+  retry (fail-open), logging and alerting on every such pass. Each verify call times out after
+  3 seconds; retry only network or internal errors. The site's backend calls verify even with an
+  empty token, and a missing token is rejected while the API answers (BR-43).
 
 ## Old Nginx gate (not an integration path)
 
 - The repo still has an Nginx `auth_request` -> `GET /v1/gate/check` gate from the earlier
-  design (BR-20..BR-23). The team answered on 2026-10-25 that Nginx is only a reverse proxy
-  without business logic, so do not build features on the gate; whether its code is removed is
-  open (OQ-1).
+  design (BR-20..BR-23). Nginx is only a reverse proxy without business logic, so do not build
+  features on the gate. Do not remove it in a separate clean-up either: it is replaced as part
+  of implementing token verification, so protected actions always keep a server-side check
+  (OQ-1, ADR 0002).
 
 ## Sites, admin and statistics
 
 - A site has a domain, allowed origins, a public site key (`data-site-key`) and a secret key for
-  token verification (BR-26). Administrators never see or edit individual rules; they set the
-  sensitivity. Whether extra per-site parameters (attempts, block duration, request limit) are
-  editable is open (BR-28, OQ-25).
+  token verification (BR-26); while the gate exists, also the address Nginx proxies to and the
+  protected routes (method + path). Administrators never see or edit individual rules; besides
+  these settings they set only the sensitivity. Attempts, block duration and request limit are
+  not admin settings (BR-28).
 - Project roles ADMIN and DEVELOPER; details open (BR-29, OQ-27).
 - Statistics are aggregate (traffic, CAPTCHA outcomes, risk scores, blocks); a per-site
   dashboard is proposed and the metrics are open (BR-30, OQ-28). Label any false-positive figure
@@ -90,7 +108,14 @@ keep the code working without the value (configurable or clearly stubbed), and t
 - Fingerprints only as HMAC hashes, exact match only; never log, store or return raw
   fingerprints (BR-32). A changed fingerprint raises risk, it does not auto-trust (BR-33).
 - Reputation per (site, fingerprint hash) is a soft signal, never an automatic allow or block
-  (BR-34). Behavioural data must be anonymised; retention and consent are open (BR-35, OQ-32).
+  (BR-34).
+- Keyed hashes are pseudonymisation, not anonymisation: never call stored data anonymous. No
+  consent banner for visitors (BR-35).
+- The raw IP is kept only while its session lives; risk assessments keep only a /24 (IPv4) or
+  /48 (IPv6) prefix. Sessions are deleted after `expires_at`, raw signals are kept 30 days,
+  individual risk assessments 14 months, daily aggregates without a limit. Signals and risk
+  assessments keep `session_id` without a foreign key; a daily clean-up enforces the periods
+  (BR-44).
 
 ## Before you finish
 
