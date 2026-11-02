@@ -56,6 +56,10 @@ customer's backend needs an ADR, Jira epics and specs. This is that ADR.
   customer's backend, with no infrastructure per customer.
 - Protection holds only if the customer's backend verifies the token. Cursora cannot enforce
   that, so the integration guide has to say it plainly.
+- Fail-open trades security for availability: while the verify API is unreachable, a bot that
+  posts the form directly is let through. The team accepted this (BR-43); the log and alert on
+  every such pass make an outage visible. A missing token is still rejected whenever the API
+  answers.
 - Cursora sees widget and verify calls, but not requests that skip the widget, so statistics
   cannot count those (OQ-28 in `docs/project-context.md`).
 - The Jira epics and specs built on the gate (proxy enforcement of protected routes) need
