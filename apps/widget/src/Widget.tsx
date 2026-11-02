@@ -51,11 +51,12 @@ export function Widget({ siteKey, view, ...actions }: WidgetProps) {
 
   if (view.state === "hidden") return null;
 
-  // Modal states (the page is dimmed) are centred on the page; every other state sits in the
-  // bottom-right corner.
+  // Every state is centred on the page. Only the modal states (page dimmed) capture the pointer
+  // over the whole viewport; for the others the layer is click-through, so the host page stays
+  // usable around the card.
   const placement = dimmed
     ? "inset-0 grid place-items-center p-4"
-    : "right-4 bottom-4 max-w-[calc(100vw-2rem)]";
+    : "pointer-events-none inset-0 grid place-items-center p-4 [&>*]:pointer-events-auto";
 
   return (
     <div data-site-key={siteKey}>
@@ -68,7 +69,7 @@ export function Widget({ siteKey, view, ...actions }: WidgetProps) {
       )}
       <div
         ref={dialogRef}
-        data-placement={dimmed ? "center" : "corner"}
+        data-cursora-layer={dimmed ? "modal" : "passive"}
         className={`fixed z-[2147483647] outline-none ${placement}`}
         {...(dimmed && {
           role: "dialog",

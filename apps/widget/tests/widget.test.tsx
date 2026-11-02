@@ -174,17 +174,20 @@ describe("widget states", () => {
     await waitFor(() => expect(widget.shadowRoot.activeElement).toBe(checkbox()));
   });
 
-  it("sits in the corner, except the modal states (failed, blocked), which are centred", async () => {
+  it("centres every state, and only modal states capture the pointer over the page", async () => {
     const widget = await mount();
-    const placement = () =>
-      widget.shadowRoot.querySelector<HTMLElement>("[data-placement]")?.dataset.placement;
-    expect(placement()).toBe("corner");
+    const layer = () => widget.shadowRoot.querySelector<HTMLElement>("[data-cursora-layer]");
+    expect(layer()?.className).toContain("place-items-center");
+    expect(layer()?.dataset.cursoraLayer).toBe("passive");
+    expect(layer()?.className).toContain("pointer-events-none");
 
     act(() => widget.setView({ state: "failed", attempt: 2, maxAttempts: 3 }));
-    expect(placement()).toBe("center");
+    expect(layer()?.className).toContain("place-items-center");
+    expect(layer()?.dataset.cursoraLayer).toBe("modal");
+    expect(layer()?.className).not.toContain("pointer-events-none");
 
     act(() => widget.setView({ state: "blocked", retryInMinutes: 14 }));
-    expect(placement()).toBe("center");
+    expect(layer()?.dataset.cursoraLayer).toBe("modal");
   });
 
   it("switches views with setView", async () => {
