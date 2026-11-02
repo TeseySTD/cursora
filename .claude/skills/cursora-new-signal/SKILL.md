@@ -6,7 +6,7 @@ description: Add or change a behavioural or request signal end to end in Cursora
 # Adding or changing a signal
 
 A signal crosses every layer, and this is the change the monorepo is built for: do it in one PR.
-Read BR-5..BR-7 and BR-32..BR-40 in `docs/project-context.md` first.
+Read BR-5..BR-7, BR-32..BR-40 and BR-44 in `docs/project-context.md` first.
 
 ## 0. Is the signal agreed?
 
@@ -30,8 +30,12 @@ collected in `docs/project-context.md` (BR-7) in the same PR, so the team sees t
 - Extend the request schema in `sessions/schemas.py`; store signals as JSONB linked to the
   session (BR-6) via `sessions/repository.py`; a new column means a migration
   (`cursora-db-migration`).
-- Server-side request signals (IP, User-Agent, rate) come from the widget's API requests and the
-  headers our Nginx sets (`X-Real-IP`, `X-Forwarded-For`) — never trust client-sent copies.
+- Server-side request signals (IP, User-Agent, rate) come from the widget's API requests. Take
+  the client IP from `X-Real-IP`, which our Nginx overwrites with `$remote_addr`. Not from
+  `X-Forwarded-For` or `request.client.host`: Nginx appends to the client's `X-Forwarded-For`,
+  and uvicorn (`--forwarded-allow-ips='*'`) takes its leftmost, client-chosen entry.
+- Keep the raw IP only while its session lives; risk assessments keep only the /24 (IPv4) or /48
+  (IPv6) prefix, and stored signals follow the BR-44 retention and its daily clean-up.
 - Hash fingerprint material with HMAC before it is stored or compared; never log it.
 - Contract changed -> `pnpm api:openapi` (`cursora-api-contract`).
 
@@ -60,4 +64,5 @@ collected in `docs/project-context.md` (BR-7) in the same PR, so the team sees t
 - [ ] Signal agreed (or `TODO(team)` with OQ-15) and documented in `docs/project-context.md`
 - [ ] Widget, schema, storage, feature, rules and training all updated in the same PR
 - [ ] No raw fingerprint stored, logged or returned; HMAC only
+- [ ] Client IP from `X-Real-IP`; raw IP, prefixes and retention as in BR-44
 - [ ] Tests at every layer; `pnpm check` passes

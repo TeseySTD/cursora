@@ -15,8 +15,10 @@ settings — never put credentials in `alembic.ini`.
    database is at `head`.
 2. Change models in the owning module's `models.py`: subclass `cursora_api.core.db.Base`,
    SQLAlchemy 2.0 typed style (`Mapped[...]`, `mapped_column(...)`), `JSONB` from
-   `sqlalchemy.dialects.postgresql` for flexible payloads. Do not name constraints by hand:
-   `NAMING_CONVENTION` in `core/db.py` keeps autogenerate diffs stable.
+   `sqlalchemy.dialects.postgresql` for flexible payloads. Leave constraint names to
+   `NAMING_CONVENTION` in `core/db.py`, which keeps autogenerate diffs stable. The exception is
+   `CheckConstraint`: give it a short `name=`, because the `ck` template is built from it
+   (`ck_<table>_<name>`).
 3. New module? Import its `models` in `apps/api/alembic/env.py`, otherwise autogenerate does
    not see its tables.
 4. `pnpm db:revision "<imperative message>"` → `apps/api/alembic/versions/<YYYYMMDD>_<rev>_<slug>.py`.
