@@ -7,3 +7,5 @@ packages/api-client/src/generated/
 ml/notebooks/
 # Python is formatted by ruff
 **/*.py
+# Vendored skills (pinned by skills-lock.json)
+.claude/skills/
