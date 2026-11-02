@@ -26,7 +26,7 @@
     "format:check:js": "prettier --check .",
     "typecheck": "pnpm typecheck:py && pnpm typecheck:js",
     "typecheck:py": "uv run mypy",
-    "typecheck:js": "pnpm -r typecheck",
+    "typecheck:js": "pnpm -r --workspace-concurrency=1 typecheck",
     "test": "pnpm test:api && pnpm test:features && pnpm test:ml && pnpm test:widget && pnpm test:admin",
     "test:api": "uv run --package cursora-api pytest apps/api",
     "test:features": "uv run --package cursora-features pytest packages/features",

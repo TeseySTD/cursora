@@ -1,6 +1,19 @@
 {
   "components": {
     "schemas": {
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
       "HealthResponse": {
         "properties": {
           "status": {
@@ -16,6 +29,75 @@
           "status"
         ],
         "title": "HealthResponse",
+        "type": "object"
+      },
+      "SessionResponse": {
+        "description": "The visitor's current session. The id itself is only in the HttpOnly cookie.",
+        "properties": {
+          "expires_at": {
+            "format": "date-time",
+            "title": "Expires At",
+            "type": "string"
+          },
+          "state": {
+            "$ref": "#/components/schemas/SessionState"
+          }
+        },
+        "required": [
+          "state",
+          "expires_at"
+        ],
+        "title": "SessionResponse",
+        "type": "object"
+      },
+      "SessionState": {
+        "enum": [
+          "new",
+          "challenge_required",
+          "verified",
+          "blocked"
+        ],
+        "title": "SessionState",
+        "type": "string"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
         "type": "object"
       }
     }
@@ -92,6 +174,66 @@
         "summary": "Check",
         "tags": [
           "gate"
+        ]
+      }
+    },
+    "/v1/sessions": {
+      "post": {
+        "description": "Restore the visitor's session from the cookie, or create a new one.\n\nCalled by the widget when a page with it loads.\n\n- 200: the cookie holds a live session. It is reused as is, state included.\n- 201: no cookie, or its session is unknown or expired. A new session in state ``new``\n  is created and its id is set in an HttpOnly cookie that expires with the session.",
+        "operationId": "sessions_ensure_session",
+        "parameters": [
+          {
+            "in": "cookie",
+            "name": "cursora_session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursora Session"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResponse"
+                }
+              }
+            },
+            "description": "The live session from the cookie was reused."
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResponse"
+                }
+              }
+            },
+            "description": "A new session was created and set in the cookie."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Ensure Session",
+        "tags": [
+          "sessions"
         ]
       }
     }
