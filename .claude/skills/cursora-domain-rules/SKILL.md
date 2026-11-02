@@ -53,20 +53,22 @@ keep the code working without the value (configurable or clearly stubbed), and t
   final assessment (BR-13). The checkbox appears only when the server decides so (BR-10).
 - The MVP has exactly one interactive task: draw a line without touching the shapes (BR-15,
   BR-16). A second type, random selection and "Try another way" are backlog, not MVP.
-- Accessibility: the same task with the keyboard (arrow keys move an object along the route)
-  and a generous time limit (BR-41).
+- Accessibility: the same task with the keyboard or on-screen arrow buttons (they move an object
+  along the route), with a generous time limit (BR-41, WCAG 2.5.7). Start, finish and gaps are
+  at least 44x44 CSS px, never under 24 (BR-17, WCAG 2.5.8).
 - Pass/fail of the task is deterministic (correctness and completion time). Not touching the
   shapes is part of correctness; speed, pauses and corrections are features for the risk
   engine/ML, not pass conditions (BR-17). There is no minimum time; solving too fast is only a
-  feature. Geometry and tolerances are open (OQ-23).
+  feature. A touch means the line enters a shape, with no extra tolerance.
 - Time limit: 2 minutes with a pointer to start with (later tuned to 99% of humans in the
   dataset), ten times that with the keyboard (BR-17, BR-41).
 - `human` passes, `suspicious` gets another attempt, `bot` is blocked temporarily. A session has
-  5 attempts; once they are used up the visitor sees "try again later or contact the site
+  5 attempts; a failed attempt is a wrong answer, a time-out or asking for a new task without
+  answering. Once they are used up the visitor sees "try again later or contact the site
   owner" (BR-18).
 - Every block (`bot`, a `block` decision, used-up attempts) lasts 15 minutes and applies to the
-  session only, never to the IP. The request rate per IP and /24 is a risk signal that leads to
-  a challenge; its values are open (BR-19, OQ-21).
+  session only, never to the IP. More than 4 new sessions from one IP in a minute, or more than
+  100 from one /24 in 5 minutes, lead to a challenge, not a block (BR-19).
 
 ## Integration: tokens like reCAPTCHA (decided 2026-10-25, ADR 0002)
 
@@ -74,8 +76,12 @@ keep the code working without the value (configurable or clearly stubbed), and t
   their backend). Any number of customer sites; Cursora runs no proxy in front of them.
 - After `allow` or `human` the widget puts a short-lived verification token into the form; the
   site's backend sends it with the secret key to the Cursora verify API; each token is accepted
-  once and lives 5 minutes, and the widget refreshes an expired token (BR-25, BR-26). Token
-  format and session binding are open (OQ-14).
+  once and lives 5 minutes, and the widget refreshes an expired token (BR-25, BR-26). A
+  checkbox pass also yields a token.
+- The token is an opaque random value (not a JWT), stored only as a hash with the site, the
+  session, the expiry time and when it was used. The verify API is reCAPTCHA/Turnstile
+  compatible: `secret` + `response` in; `success`, `challenge_ts`, `hostname`, `error-codes`
+  (`timeout-or-duplicate`) out (BR-25).
 - Only actions are protected (e.g. `POST /login`), never page views; search crawlers are not
   affected and scraping protection is outside the MVP (BR-42).
 - If the Cursora API is unreachable, customers are advised to let visitors through after one
@@ -108,7 +114,7 @@ keep the code working without the value (configurable or clearly stubbed), and t
 - Fingerprints only as HMAC hashes, exact match only; never log, store or return raw
   fingerprints (BR-32). A changed fingerprint raises risk, it does not auto-trust (BR-33).
 - Reputation per (site, fingerprint hash) is a soft signal, never an automatic allow or block
-  (BR-34).
+  (BR-34). A reputation record is deleted 30 days after its last activity.
 - Keyed hashes are pseudonymisation, not anonymisation: never call stored data anonymous. No
   consent banner for visitors (BR-35).
 - The raw IP is kept only while its session lives; risk assessments keep only a /24 (IPv4) or

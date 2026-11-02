@@ -27,11 +27,16 @@ customer's backend needs an ADR, Jira epics and specs. This is that ADR.
 
 1. Each site has a public site key, used by the widget, and a secret key, used by the site's
    backend.
-2. After a pass (`allow`, or `human` after the interactive task) the widget puts a
-   short-lived verification token into the form. A token lives 5 minutes, as in Cloudflare
-   Turnstile, and the widget refreshes an expired token itself.
+2. After a pass (`allow`, a checkbox pass, or `human` after the interactive task) the widget
+   puts a short-lived verification token into the form. A token lives 5 minutes, as in
+   Cloudflare Turnstile, and the widget refreshes an expired token itself. The token is an
+   opaque random value, not a JWT; Cursora stores only its hash with the site, the session,
+   the expiry time and when it was used.
 3. The site's backend sends the token and its secret key to the Cursora verify API and
-   accepts the protected action only if the token is valid. Each token is accepted once.
+   accepts the protected action only if the token is valid. Each token is accepted once. The
+   verify API is compatible with reCAPTCHA and Turnstile: it takes `secret` and `response` and
+   returns `success`, `challenge_ts`, `hostname` and `error-codes` (`timeout-or-duplicate` for
+   an expired or reused token), so existing client libraries work with only the URL changed.
 4. Only actions are protected, such as form submissions (`POST /login`), never page views.
 5. If the verify API is unreachable, customers are advised to let the action through after
    one retry (fail-open), and to log and alert on every such pass, as Friendly Captcha's SDKs
@@ -56,8 +61,7 @@ customer's backend needs an ADR, Jira epics and specs. This is that ADR.
 - The Jira epics and specs built on the gate (proxy enforcement of protected routes) need
   revising, together with the site settings that only the gate uses: the address Nginx
   proxies to and the protected routes.
-- Still open: the token format, session binding and verify response (OQ-14), and which API
-  module issues and verifies tokens.
+- Still open: which API module issues and verifies tokens.
 - Alternatives considered: an Nginx gate run by each customer (infrastructure per customer, the
   cookie domain, closing direct access to the backend), a proxy run by Cursora in front of all
   customer sites (DNS, TLS and all traffic through Cursora, one outage for every site), and both
