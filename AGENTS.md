@@ -206,7 +206,8 @@ Where a third-party skill's generic advice conflicts with this repo, the repo wi
 - `pydantic`: Python 3.14 with ruff UP rules, so `type X = ...` instead of `TypeAlias` and no
   quoted annotations.
 - `react-router`: its docs are in `apps/admin/node_modules/react-router/docs/`; server state stays
-  in TanStack Query; `RouterProvider` comes from `react-router/dom`.
+  in TanStack Query; `RouterProvider` comes from `react-router/dom`. The admin is Data Mode, not
+  RSC: the `"use client"` lines in shadcn components do not make it RSC.
 - `vitest`: the installed Vitest is 5.0.x while the skill describes 5.1; test config stays in each
   app's `vite.config.ts`; it does not apply to the pytest suites.
 - `accessibility`: WCAG large text is 18pt (24px) or 14pt bold (about 18.7px); inside the widget's
