@@ -36,8 +36,8 @@ flowchart LR
   host page's form.
 - **Customer backend**: sends the token with the site's secret key to the Cursora verify
   API and accepts the protected action only if the token is valid; each token is accepted
-  once ([ADR 0002](adr/0002-token-verification-integration.md)). The token format and the
-  module that issues and verifies tokens are still `TODO(team)`.
+  once ([ADR 0002](adr/0002-token-verification-integration.md)). Which module issues and
+  verifies tokens is still `TODO(team)`.
 - **Nginx**: only a reverse proxy for Cursora's own services (admin, `widget.js`, `/api/`).
   It holds no business logic. The `gate` module and the sample site's `auth_request`
   config are left from the earlier design and are replaced by token verification.

@@ -38,7 +38,7 @@ removed in a separate clean-up.
 | Database                              | PostgreSQL 18 (JSONB where useful). **No Redis.**                                          |
 | Tests                                 | pytest + pytest-asyncio + httpx; Vitest 5 + Testing Library + jsdom                        |
 | Quality                               | ruff, mypy `--strict` (pydantic plugin), ESLint flat config, Prettier, actionlint          |
-| Infra / CI                            | Docker Compose, Nginx (`auth_request` gate), GitHub Actions (`ci-ok` required), Dependabot |
+| Infra / CI                            | Docker Compose, Nginx (reverse proxy), GitHub Actions (`ci-ok` required), Dependabot       |
 
 Rationale: [docs/adr/0001-monorepo-structure.md](docs/adr/0001-monorepo-structure.md).
 
@@ -105,7 +105,9 @@ Run everything from the repo root through the root `package.json` scripts, the o
   ML score is an optional input via the `MlScorer` port, and the engine must decide without it.
 - Feature extraction lives only in `packages/features`; the api and ml both import it (no
   train/serve skew). The api must not depend on pandas, scikit-learn or jupyter.
-- No business logic in Nginx: it only forwards to `/v1/gate/check` and acts on the status.
+- No business logic in Nginx: it is only a reverse proxy for Cursora's own services. Do not build
+  on the old `auth_request` gate; it is replaced as part of token verification
+  ([ADR 0002](docs/adr/0002-token-verification-integration.md)).
 - Fingerprints are stored and compared only as HMAC hashes. Never log, store or return raw
   fingerprints.
 - A raw client IP is stored only while its session lives; risk assessments keep only a /24

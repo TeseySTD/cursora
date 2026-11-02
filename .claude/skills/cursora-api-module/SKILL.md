@@ -20,8 +20,9 @@ Each bounded context is a package `apps/api/src/cursora_api/modules/<module>/`:
 | `models.py`     | ORM tables, subclasses of `cursora_api.core.db.Base`.                                   |
 
 Modules: `tenant` (sites, site keys, per-site settings), `sessions` (widget sessions and
-signals), `risk` (`evaluator.py`, `rules/`, `sensitivity.py`, `ml_port.py`), `gate` (Nginx
-`auth_request` target `GET /v1/gate/check`), `insights` (aggregate statistics).
+signals), `risk` (`evaluator.py`, `rules/`, `sensitivity.py`, `ml_port.py`), `gate` (the old Nginx
+`auth_request` target `GET /v1/gate/check`, replaced by token verification, ADR 0002),
+`insights` (aggregate statistics).
 
 ## Rules
 

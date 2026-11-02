@@ -29,6 +29,14 @@ reviews:
     Domain vocabulary: session statuses new / challenge_required / verified / blocked; risk
     decisions allow / challenge / block; final verdicts human / suspicious / bot; sensitivity is
     one integer 0-100 per site. Flag other spellings or extra states.
+    Integration (docs/adr/0002-token-verification-integration.md): after a pass the widget puts
+    a short-lived token into the form and the site's backend verifies it with the site's secret
+    key through the Cursora verify API. Only actions such as form submissions are protected,
+    never page views. Nginx is only a reverse proxy for Cursora's own services; Cursora runs no
+    proxy in front of customer sites. The Nginx auth_request gate (GET /v1/gate/check) is the
+    earlier design: flag new features built on it, and flag removing it in a PR that does not
+    also bring token verification, because it is replaced as part of that work, not removed in
+    a separate clean-up.
     Write in English. Be concise: one issue per comment, with the problem, why it matters and the
     fix. No praise and no restating the diff. Skip formatting and lint issues that ruff,
     mypy --strict, ESLint, tsc and Prettier already enforce in CI (`pnpm check`).
@@ -78,8 +86,16 @@ reviews:
           that cannot decide when ml_score is None.
         - Feature extraction re-implemented in apps/api instead of importing cursora_features.
         - New imports or dependencies on pandas, scikit-learn, jupyter or Redis in apps/api.
-        - gate/router.py doing more than mapping the request for Nginx auth_request. The status
-          codes for challenge and block are TODO(team): flag invented codes.
+        - Changes to the gate module (GET /v1/gate/check) that extend it instead of replacing it
+          with token verification (ADR 0002); its status codes for challenge and block are
+          TODO(team): flag invented codes.
+        - Token verification that departs from ADR 0002 and BR-25: tokens must be opaque random values,
+          not JWTs; only their hash is stored, with the site, the session, the expiry time and
+          when the token was used; a token is accepted once and lives 5 minutes. The verify API
+          takes `secret` and `response` and returns `success`, `challenge_ts`, `hostname` and
+          `error-codes` (`timeout-or-duplicate` for an expired or reused token), like reCAPTCHA
+          and Turnstile. Flag raw tokens or secret keys in logs, error messages or columns
+          that store tokens. Which module issues and verifies tokens is still open.
         - Route or schema changes without a regenerated packages/api-client/openapi.json
           (`pnpm api:openapi`) in the same PR, and breaking contract changes (removed or renamed
           routes, fields or enum values, changed status codes or required fields) that the PR
@@ -121,6 +137,9 @@ reviews:
         - Signal collection that is not listed in docs/project-context.md, pointer/touch
           listeners that are not passive or not removed on unmount, console logging of signals,
           or network calls to anything except the Cursora API.
+        - Token handling that departs from ADR 0002: after a pass the widget puts the token into
+          the host form and refreshes an expired token itself. The widget only ever knows the
+          public site key; flag any secret key in widget code or config.
         - Missing Vitest + Testing Library tests for new behaviour.
     - name: Admin SPA and API contract
       include:
@@ -162,10 +181,11 @@ reviews:
         - ml: pandas and scikit-learn are allowed here only. Features must come from
           cursora_features.extract_features, never a copy. Training should be reproducible
           (fixed random seeds); never commit data or model artefacts (ml/data, ml/models).
-        - infra/nginx: no business logic. Protected locations only use auth_request to an
-          internal location that proxies to /v1/gate/check and act on the status (2xx allow,
-          401/403 deny). Flag njs/lua, map or if based allow/deny rules, duplicated risk logic, a
-          gate location without `internal;`, or a gate subrequest that forwards the body.
+        - infra/nginx: only a reverse proxy for Cursora's own services, with no business logic
+          and no proxy in front of customer sites (ADR 0002). Flag njs/lua, map or if based
+          allow/deny rules, duplicated risk logic, and new protected locations or other
+          extensions of the auth_request gate sample (conf.d/20-protected-origin.conf); the gate
+          is replaced together with token verification, not extended.
         - infra/docker and infra/compose: pin base images to exact versions, no secrets in
           images or compose files, keep compose.yml and compose.dev.yml consistent.
         - .github/workflows: pin actions to exact versions, least-privilege permissions, no

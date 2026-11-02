@@ -2,8 +2,10 @@
 
 Cursora is a bot-protection service for websites. A small JavaScript widget collects
 signals in the browser, a FastAPI backend scores them with a deterministic risk engine
-(optionally assisted by an ML model) and answers allow / challenge / block. Nginx asks it
-via `auth_request` before forwarding requests to the protected routes of a site.
+(optionally assisted by an ML model) and answers allow / challenge / block. After a pass the
+widget puts a short-lived token into the site's form, and the site's backend verifies it with
+its secret key through the Cursora API, as with reCAPTCHA
+([ADR 0002](docs/adr/0002-token-verification-integration.md)).
 
 See [docs/architecture.md](docs/architecture.md) for the components and request flow.
 
@@ -31,13 +33,13 @@ A busy port makes the server exit instead of moving to another port. To use othe
 
 Full stack in Docker: `pnpm docker:up`
 
-| URL                                    | What                                   |
-| -------------------------------------- | -------------------------------------- |
-| http://localhost:8080/                 | Admin panel                            |
-| http://localhost:8080/api/docs         | API                                    |
-| http://localhost:8080/widget/widget.js | Widget bundle                          |
-| http://localhost:8081/protected/       | Sample site, guarded by `auth_request` |
-| http://localhost:8081/                 | Sample site, unprotected               |
+| URL                                    | What                                           |
+| -------------------------------------- | ---------------------------------------------- |
+| http://localhost:8080/                 | Admin panel                                    |
+| http://localhost:8080/api/docs         | API                                            |
+| http://localhost:8080/widget/widget.js | Widget bundle                                  |
+| http://localhost:8081/protected/       | Sample site behind the old `auth_request` gate |
+| http://localhost:8081/                 | Sample site, unprotected                       |
 
 Before pushing, run `pnpm check`.
 
