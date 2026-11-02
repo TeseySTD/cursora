@@ -14,7 +14,7 @@ dev = [
 [tool.ruff]
 line-length = 100
 target-version = "py314"
-extend-exclude = ["ml/notebooks"]
+extend-exclude = ["ml/notebooks", ".claude/skills"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "SIM", "ASYNC", "RUF"]
