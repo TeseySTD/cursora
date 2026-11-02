@@ -14,10 +14,14 @@ dev = [
 [tool.ruff]
 line-length = 100
 target-version = "py314"
-extend-exclude = ["ml/notebooks", ".claude/skills"]
+extend-exclude = [".claude/skills"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "SIM", "ASYNC", "RUF"]
+
+[tool.ruff.lint.per-file-ignores]
+# marimo shows a cell's output via a bare trailing expression
+"ml/notebooks/*.py" = ["B018"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["cursora_api", "cursora_features", "cursora_ml"]

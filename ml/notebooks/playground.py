@@ -6,7 +6,6 @@ app = marimo.App(width="medium")
 
 @app.cell
 def _():
-    import marimo as mo
     import polars as pl
 
     return (pl,)
