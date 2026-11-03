@@ -7,6 +7,7 @@
     "node": ">=22.18.0"
   },
   "scripts": {
+    "prepare": "husky",
     "bootstrap": "pnpm install && uv sync --all-packages",
     "dev": "concurrently -k -n api,admin,widget -c blue,magenta,green \"pnpm dev:api\" \"pnpm dev:admin\" \"pnpm dev:widget\"",
     "dev:api": "uv run --package cursora-api uvicorn cursora_api.main:create_app --factory --reload --reload-dir apps/api/src --reload-dir packages/features/src",
@@ -44,7 +45,7 @@
     "docker:config": "node scripts/compose.mjs prod config --quiet",
     "docker:nginx-test": "node scripts/compose.mjs prod run --rm --no-deps nginx nginx -t",
     "skills:outdated": "node scripts/skills-outdated.mjs",
-    "ml:notebook": "uv run --package cursora-ml --group notebook jupyter lab --notebook-dir ml/notebooks",
+    "ml:notebook": "uv run --package cursora-ml --group notebook marimo edit ml/notebooks",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm api:check"
   },
   "devDependencies": {
@@ -55,6 +56,8 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.7",
     "globals": "^17.13.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0",
     "prettier": "^3.9.10",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.72.0"
