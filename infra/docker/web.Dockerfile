@@ -3,7 +3,7 @@
 
 # ---- build: admin + widget static files ----
 # 24.22.1 (.nvmrc) has no amd64 image yet; bump when published.
-FROM node:24.22.0-trixie-slim AS build
+FROM node:24.22.2-trixie-slim AS build
 ENV PNPM_HOME=/pnpm \
     COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 ENV PATH="$PNPM_HOME:$PATH"
@@ -27,7 +27,7 @@ ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 RUN pnpm --filter @cursora/widget build && pnpm --filter @cursora/admin build
 
 # ---- runtime: nginx with static files ----
-FROM nginx:1.31.7-alpine
+FROM nginx:1.31.8-alpine
 COPY infra/nginx/nginx.conf /etc/nginx/nginx.conf
 COPY infra/nginx/conf.d/ /etc/nginx/conf.d/
 COPY --from=build /src/apps/admin/dist/ /usr/share/nginx/html/admin/

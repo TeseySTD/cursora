@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 # Cursora API image. Build context: repository root.
 
-FROM ghcr.io/astral-sh/uv:0.13.4 AS uv
+FROM ghcr.io/astral-sh/uv:0.13.7 AS uv
 
 # ---- build: resolve and install the locked dependencies into /app/.venv ----
 FROM python:3.14-slim-trixie AS build
