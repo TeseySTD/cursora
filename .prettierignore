@@ -8,3 +8,6 @@ packages/api-client/src/generated/
 **/*.py
 # Vendored skills (pinned by skills-lock.json)
 .claude/skills/
+
+# Vendored git submodules
+ml/vendor/

@@ -177,6 +177,17 @@ wheels = [
 ]
 
 [[package]]
+name = "capycap"
+version = "0.0.0"
+source = { editable = "ml/vendor/capycap" }
+dependencies = [
+    { name = "numpy" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "numpy" }]
+
+[[package]]
 name = "certifi"
 version = "2026.10.19"
 source = { registry = "https://pypi.org/simple" }
@@ -330,6 +341,7 @@ name = "cursora-ml"
 version = "0.1.0"
 source = { editable = "ml" }
 dependencies = [
+    { name = "capycap" },
     { name = "cursora-features" },
     { name = "huggingface-hub" },
     { name = "pandas" },
@@ -347,6 +359,7 @@ notebook = [
 
 [package.metadata]
 requires-dist = [
+    { name = "capycap", editable = "ml/vendor/capycap" },
     { name = "cursora-features", editable = "packages/features" },
     { name = "huggingface-hub", specifier = ">=2.4.0" },
     { name = "pandas", specifier = ">=3.0.6" },

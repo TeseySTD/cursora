@@ -14,7 +14,7 @@ dev = [
 [tool.ruff]
 line-length = 100
 target-version = "py314"
-extend-exclude = [".claude/skills"]
+extend-exclude = [".claude/skills", "ml/vendor"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "SIM", "ASYNC", "RUF"]
@@ -31,3 +31,8 @@ python_version = "3.14"
 strict = true
 files = ["apps/api/src", "packages/features/src", "ml/src"]
 plugins = ["pydantic.mypy"]
+
+# Vendored submodule (ml/vendor/capycap/upstream), installed via a uv path source; untyped.
+[[tool.mypy.overrides]]
+module = ["capycap", "capycap.*"]
+ignore_missing_imports = true
