@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "env": {
+    "OPENSPEC_TELEMETRY": "0"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(pnpm check)",
+      "Bash(pnpm lint*)",
+      "Bash(pnpm format*)",
+      "Bash(pnpm typecheck*)",
+      "Bash(pnpm test*)",
+      "Bash(pnpm api:check)",
+      "Bash(pnpm api:openapi)",
+      "Bash(pnpm build)",
+      "Bash(pnpm size:widget)",
+      "Bash(uv run ruff *)",
+      "Bash(uv run mypy *)",
+      "Bash(uv run pytest *)",
+      "Bash(uv run --package cursora-api pytest *)",
+      "Bash(uv run --package cursora-features pytest *)",
+      "Bash(uv run --package cursora-ml pytest *)",
+      "Bash(openspec list *)",
+      "Bash(openspec show *)",
+      "Bash(openspec validate *)",
+      "Bash(openspec status *)",
+      "Bash(openspec instructions *)"
+    ],
+    "ask": [
+      "Bash(git push *)",
+      "Bash(git reset --hard *)",
+      "Bash(git clean *)",
+      "Bash(git branch -D *)",
+      "Bash(gh pr merge *)",
+      "Bash(rm -r*)",
+      "Bash(rm -R*)",
+      "Bash(rm -fr*)",
+      "Bash(rm -fR*)",
+      "Bash(rm --recursive*)",
+      "Bash(docker system prune*)",
+      "Bash(docker volume prune*)",
+      "Bash(docker volume rm *)"
+    ],
+    "deny": [
+      "Read(.env)",
+      "Read(.env.*)",
+      "Read(!.env.example)",
+      "Edit(/pnpm-lock.yaml)",
+      "Edit(/uv.lock)",
+      "Edit(/packages/api-client/openapi.json)",
+      "Edit(/packages/api-client/src/generated/**)",
+      "Bash(git push --force*)",
+      "Bash(git push -f*)",
+      "Bash(git push * --force*)",
+      "Bash(git push * -f*)",
+      "Bash(git push * +*)",
+      "Bash(gh repo delete*)"
+    ]
+  }
+}

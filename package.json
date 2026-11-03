@@ -44,11 +44,13 @@
     "docker:build": "node scripts/compose.mjs prod build",
     "docker:config": "node scripts/compose.mjs prod config --quiet",
     "docker:nginx-test": "node scripts/compose.mjs prod run --rm --no-deps nginx nginx -t",
+    "skills:outdated": "node scripts/skills-outdated.mjs",
     "ml:notebook": "uv run --package cursora-ml --group notebook marimo edit ml/notebooks",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm api:check"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@playwright/mcp": "0.0.83",
     "concurrently": "^10.0.6",
     "eslint": "^10.13.0",
     "eslint-plugin-react-hooks": "^7.1.1",
