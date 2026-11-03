@@ -1,3 +1,4 @@
 [submodule "ml/vendor/capycap/upstream"]
 	path = ml/vendor/capycap/upstream
 	url = https://github.com/huzpsb/capy_cap_py.git
+	ignore = untracked
