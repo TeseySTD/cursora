@@ -14,7 +14,7 @@ JSONL, one session per line (same fields as the dataset):
 ```
 
 - Grid is 200x200; coordinates are clamped to it and rounded to 2 decimals.
-- Ticks are sampled at 60 fps: `physicsTickCount = int(duration / 1000 * fps)`.
+- Ticks are sampled at the requested fps, with at least 2 ticks: `physicsTickCount = max(2, int(duration / 1000 * fps))`.
 - `label` is always `"bot"`; `botType` holds the bot type.
 
 ## Bot types (increasing realism)
