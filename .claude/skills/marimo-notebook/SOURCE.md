@@ -33,5 +33,6 @@ Formatted with Prettier, and Python (files and Markdown code blocks) with
 - All commands: `uvx marimo` and `uv --with marimo` replaced by
   `uv run --package cursora-ml --group notebook`; `pip install` and `uv pip install` by `uv add`.
 - `references/SQL.md`: removed the SQLModel sentence; made the `mo.sql` signature valid Python.
-- `references/ANYWIDGET.md`: fixed the `b8utton` typo.
+- `references/ANYWIDGET.md`: fixed the `b8utton` typo; fenced the `<example>` code so formatters
+  keep its indentation.
 - `references/WATCHING.md`: the second `mo.watch.file` is `mo.watch.directory`.

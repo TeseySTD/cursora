@@ -6,39 +6,44 @@ description: Generate anywidget components for marimo notebooks.
 When writing an anywidget use vanilla javascript in `_esm` and do not forget about `_css`. The css should look bespoke in light mode and dark mode. Keep the css small unless explicitly asked to go the extra mile. When you display the widget it must be wrapped via `widget = mo.ui.anywidget(OriginalAnywidget())`. You can also point `_esm` and `_css` to external files if needed using pathlib. This makes sense if the widget does a lot of elaborate JavaScript or CSS.
 
 <example title="Example of simple anywidget implementation">
+
+```python
 import anywidget
 import traitlets
 
+
 class CounterWidget(anywidget.AnyWidget):
-_esm = """
-// Define the main render function
-function render({ model, el }) {
-let count = () => model.get("number");
-let btn = document.createElement("button");
-btn.innerHTML = `count is ${count()}`;
-btn.addEventListener("click", () => {
-model.set("number", count() + 1);
-model.save_changes();
-});
-model.on("change:number", () => {
-btn.innerHTML = `count is ${count()}`;
-});
-el.appendChild(btn);
-}
-// Important! We must export at the bottom here!
-export default { render };
-"""
-_css = """button{
-font-size: 14px;
-}"""
-number = traitlets.Int(0).tag(sync=True)
+    _esm = """
+    // Define the main render function
+    function render({ model, el }) {
+      let count = () => model.get("number");
+      let btn = document.createElement("button");
+      btn.innerHTML = `count is ${count()}`;
+      btn.addEventListener("click", () => {
+        model.set("number", count() + 1);
+        model.save_changes();
+      });
+      model.on("change:number", () => {
+        btn.innerHTML = `count is ${count()}`;
+      });
+      el.appendChild(btn);
+    }
+    // Important! We must export at the bottom here!
+    export default { render };
+    """
+    _css = """button{
+      font-size: 14px;
+    }"""
+    number = traitlets.Int(0).tag(sync=True)
+
 
 widget = mo.ui.anywidget(CounterWidget())
 widget
 
 # Grabbing the widget from another cell, `.value` is a dictionary.
-
 print(widget.value["number"])
+```
+
 </example>
 
 The above is a minimal example that could work for a simple counter widget. In general the widget can become much larger because of all the JavaScript and CSS required. Unless the widget is dead simple, you should consider using external files for `_esm` and `_css` using pathlib.
