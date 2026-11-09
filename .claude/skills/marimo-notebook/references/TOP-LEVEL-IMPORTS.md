@@ -28,11 +28,7 @@ with app.setup:
 @app.function
 def calculate_statistics(data):
     """Calculate basic statistics for a dataset"""
-    return {
-        "mean": np.mean(data),
-        "median": np.median(data),
-        "std": np.std(data)
-    }
+    return {"mean": np.mean(data), "median": np.median(data), "std": np.std(data)}
 
 
 @app.cell
@@ -40,6 +36,7 @@ def _():
     import marimo as mo
 
     return
+
 
 if __name__ == "__main__":
     app.run()

@@ -86,7 +86,7 @@ reviews:
         - ML scoring that bypasses the MlScorer port (modules/risk/ml_port.py), or an evaluator
           that cannot decide when ml_score is None.
         - Feature extraction re-implemented in apps/api instead of importing cursora_features.
-        - New imports or dependencies on pandas, scikit-learn, jupyter or Redis in apps/api.
+        - New imports or dependencies on pandas, scikit-learn, marimo, CapyCap or Redis in apps/api.
         - Changes to the gate module (GET /v1/gate/check) that extend it instead of replacing it
           with token verification (ADR 0002); its status codes for challenge and block are
           TODO(team): flag invented codes.

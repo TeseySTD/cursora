@@ -56,11 +56,9 @@ def _(ModelParams, mo, wandb):
     is_script_mode = mo.app_meta().mode == "script"
 
     env_config = mo.ui.anywidget(
-        EnvConfig(
-            {
-                "WANDB_API_KEY": lambda k: wandb.login(key=k, verify=True),
-            }
-        )
+        EnvConfig({
+            "WANDB_API_KEY": lambda k: wandb.login(key=k, verify=True),
+        })
     )
 
     if is_script_mode and not mo.cli_args():
@@ -114,7 +112,6 @@ def _():
     import json
     from pydantic import computed_field, BaseModel, Field
 
-
     class ModelParams(BaseModel):
         epochs: int = Field(default=25, description="Number of training epochs.")
         batch_size: int = Field(default=32, description="Training batch size.")
@@ -145,7 +142,8 @@ def _():
 @app.cell
 def _(mo):
     params_form = (
-        mo.md("""
+        mo
+        .md("""
     ## Model parameters
 
     {epochs}

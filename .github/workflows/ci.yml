@@ -85,6 +85,8 @@ jobs:
       CURSORA_DATABASE_URL: postgresql+asyncpg://cursora:cursora@127.0.0.1:5432/cursora
     steps:
       - uses: actions/checkout@v7.0.1
+        with:
+          submodules: true
       - uses: pnpm/action-setup@v6.1.0
       - uses: actions/setup-node@v7.1.0
         with:
@@ -101,6 +103,7 @@ jobs:
       - run: pnpm test:api
       - run: pnpm test:features
       - run: pnpm test:ml
+      - run: pnpm test:ml:replay
 
   frontend:
     needs: changes
@@ -138,6 +141,8 @@ jobs:
       UV_LOCKED: "1"
     steps:
       - uses: actions/checkout@v7.0.1
+        with:
+          submodules: true
       # No `pnpm install`: the check only needs Node, pnpm (to run the script) and uv.
       - uses: pnpm/action-setup@v6.1.0
       - uses: actions/setup-node@v7.1.0

@@ -1,0 +1,289 @@
+<!doctype html><meta charset="utf-8" />
+<style>
+  body {
+    margin: 0;
+    font:
+      13px system-ui,
+      sans-serif;
+    color: #222;
+    background: #fff;
+  }
+  .hd {
+    padding: 6px 8px;
+    font-weight: 600;
+    line-height: 1.35;
+  }
+  .hd small {
+    font-weight: 400;
+    color: #555;
+  }
+  canvas {
+    width: 100%;
+    display: block;
+    background: #f6f6f4;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+  }
+  .row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 6px 8px;
+  }
+  input[type="range"] {
+    flex: 1;
+  }
+  .win {
+    position: relative;
+    height: 6px;
+    margin: 0 8px;
+    background: #ddd;
+  }
+  .win i {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    background: #4c8bf5;
+  }
+  button,
+  select {
+    font: inherit;
+  }
+</style>
+<div class="hd" id="hd"></div>
+<canvas id="c" width="400" height="400"></canvas>
+<div class="win"><i id="win"></i></div>
+<div class="row">
+  <button id="play">Pause</button>
+  <input id="seek" type="range" min="0" value="0" />
+  <select id="spd">
+    <option>0.5</option>
+    <option selected>1</option>
+    <option>2</option>
+    <option>4</option></select
+  >x
+</div>
+<div class="row" id="lbl"></div>
+<script>
+  const D = __DATA__;
+  const cv = document.getElementById("c"),
+    g = cv.getContext("2d"),
+    K = cv.width / 200;
+  const COL = [
+    "#e6194b",
+    "#3cb44b",
+    "#4363d8",
+    "#f58231",
+    "#911eb4",
+    "#008080",
+    "#9a6324",
+    "#808000",
+    "#000075",
+    "#f032e6",
+  ];
+  document.getElementById("hd").innerHTML = D.title;
+  const seek = document.getElementById("seek"),
+    N = D.frames.length;
+  seek.max = N - 1;
+  const win = document.getElementById("win");
+  win.style.left = (100 * D.win[0]) / D.n_ticks + "%";
+  win.style.width = (100 * (D.win[1] - D.win[0])) / D.n_ticks + "%";
+
+  function poly(pts) {
+    g.beginPath();
+    pts.forEach((p, i) => (i ? g.lineTo(p[0] * K, p[1] * K) : g.moveTo(p[0] * K, p[1] * K)));
+    g.closePath();
+  }
+  function reg(x, y, r, n) {
+    const a = [];
+    for (let i = 0; i < n; i++) {
+      const t = (i * 2 * Math.PI) / n - Math.PI / 2;
+      a.push([x + r * Math.cos(t), y + r * Math.sin(t)]);
+    }
+    return a;
+  }
+  function shape(id, x, y, r) {
+    if (id === 0) {
+      g.beginPath();
+      g.arc(x * K, y * K, r * 1.15 * K, 0, 7);
+      return;
+    }
+    if (id === 1) {
+      const m = r * 0.9775;
+      poly([
+        [x - m, y - m],
+        [x + m, y - m],
+        [x + m, y + m],
+        [x - m, y + m],
+      ]);
+      return;
+    }
+    if (id === 2) {
+      poly(reg(x, y, r * 1.2075, 5));
+      return;
+    }
+    if (id === 3) {
+      poly(reg(x, y, r * 1.15, 6));
+      return;
+    }
+    if (id === 4) {
+      poly(reg(x, y, r * 1.265, 8));
+      return;
+    }
+    if (id === 5) {
+      g.beginPath();
+      g.ellipse(x * K, y * K, r * 0.92 * K, r * 1.61 * K, 0, 0, 7);
+      return;
+    }
+    if (id === 6) {
+      const m = r * 1.035;
+      poly([
+        [x - 0.7 * m, y - m],
+        [x + 0.7 * m, y - m],
+        [x + 1.3 * m, y + m],
+        [x - 1.3 * m, y + m],
+      ]);
+      return;
+    }
+    const w = r * 0.85 * 1.265,
+      h = r * 0.85 * 2 * 1.265;
+    poly([
+      [x, y + h * 0.7],
+      [x - w * 1.2, y + h * 0.2],
+      [x - w * 1.3, y - h * 0.3],
+      [x - w * 0.8, y - h * 0.55],
+      [x, y - h * 0.3],
+      [x + w * 0.8, y - h * 0.55],
+      [x + w * 1.3, y - h * 0.3],
+      [x + w * 1.2, y + h * 0.2],
+    ]);
+  }
+  function pointer(i) {
+    if (i[0] === 0 && i[1] === 0) return;
+    g.beginPath();
+    g.arc(i[0] * K, i[1] * K, 4, 0, 7);
+    if (i[2]) {
+      g.fillStyle = "#000";
+      g.fill();
+    } else {
+      g.strokeStyle = "#000";
+      g.lineWidth = 1.5;
+      g.stroke();
+    }
+  }
+  function draw(k) {
+    const f = D.frames[k],
+      S = D.static;
+    g.clearRect(0, 0, cv.width, cv.height);
+    if (D.game === "thread-the-needle") {
+      S.needles.forEach((nd, j) => {
+        shape(nd.shape, f.n[j][0], f.n[j][1], S.r);
+        g.fillStyle = COL[nd.color] + "88";
+        g.fill();
+        g.strokeStyle = COL[nd.color];
+        g.lineWidth = nd.target ? 4 : 1.5;
+        g.stroke();
+      });
+      g.strokeStyle = "#333";
+      g.lineWidth = 2;
+      g.beginPath();
+      f.p.forEach((p, i) => (i ? g.lineTo(p[0] * K, p[1] * K) : g.moveTo(p[0] * K, p[1] * K)));
+      g.stroke();
+      const e = f.p[f.p.length - 1];
+      g.beginPath();
+      g.arc(e[0] * K, e[1] * K, 5, 0, 7);
+      g.fillStyle = "#333";
+      g.fill();
+    } else if (D.game === "sheep-herding") {
+      g.beginPath();
+      g.arc(S.goal[0] * K, S.goal[1] * K, S.capture_r * K, 0, 7);
+      g.fillStyle = "#4c8bf522";
+      g.fill();
+      g.strokeStyle = "#4c8bf5";
+      g.setLineDash([4, 4]);
+      g.lineWidth = 1.5;
+      g.stroke();
+      g.setLineDash([]);
+      g.strokeStyle = "#555";
+      g.lineWidth = (6 * K) / 2;
+      g.lineCap = "round";
+      S.walls.forEach((w) => {
+        g.beginPath();
+        w.forEach((p, i) => (i ? g.lineTo(p[0] * K, p[1] * K) : g.moveTo(p[0] * K, p[1] * K)));
+        g.stroke();
+      });
+      f.s.forEach((sh) => {
+        g.beginPath();
+        g.arc(sh[0] * K, sh[1] * K, (4 * K) / 2, 0, 7);
+        g.fillStyle = sh[2] ? "#aaa" : "#222";
+        g.fill();
+      });
+      if (f.i[2] && !(f.i[0] === 0 && f.i[1] === 0)) {
+        g.beginPath();
+        g.arc(f.i[0] * K, f.i[1] * K, S.vacuum_r * K, 0, 7);
+        g.strokeStyle = "#e6194b88";
+        g.lineWidth = 1.5;
+        g.stroke();
+      }
+    } else {
+      g.fillStyle = "#999";
+      g.fillRect(35 * K, 170 * K, 130 * K, 10 * K);
+      g.fillRect(0, 0, 10 * K, 200 * K);
+      g.fillRect(190 * K, 0, 10 * K, 200 * K);
+      f.q.forEach((q, j) => {
+        poly(q);
+        g.fillStyle = COL[S.colors[j] * 2] + "aa";
+        g.fill();
+        g.strokeStyle = "#222";
+        g.lineWidth = 1.5;
+        g.stroke();
+      });
+    }
+    pointer(f.i);
+    // The final frame is the session's last tick, which may be closer than one stride.
+    const tick = Math.min(k * D.stride, D.n_ticks - 1);
+    document.getElementById("lbl").textContent =
+      "t = " +
+      (tick / 240).toFixed(2) +
+      " s · tick " +
+      tick +
+      " / " +
+      D.n_ticks +
+      (k === N - 1 ? (D.solved ? " · solved" : " · not solved") : "");
+  }
+  let k = 0,
+    playing = true,
+    last = null,
+    acc = 0;
+  const btn = document.getElementById("play");
+  btn.onclick = () => {
+    playing = !playing;
+    btn.textContent = playing ? "Pause" : "Play";
+    if (k >= N - 1 && playing) k = 0;
+  };
+  seek.oninput = () => {
+    k = +seek.value;
+    draw(k);
+  };
+  function loop(ts) {
+    if (playing && last !== null) {
+      acc += ((ts - last) * +document.getElementById("spd").value * 60) / 1000;
+      while (acc >= 1) {
+        acc -= 1;
+        k++;
+        if (k >= N - 1) {
+          k = N - 1;
+          playing = false;
+          btn.textContent = "Play";
+          break;
+        }
+      }
+      seek.value = k;
+      draw(k);
+    }
+    last = ts;
+    requestAnimationFrame(loop);
+  }
+  draw(0);
+  requestAnimationFrame(loop);
+</script>

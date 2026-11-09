@@ -53,16 +53,15 @@ def _(mo):
     get_items, set_items = mo.state([])
     return get_items, set_items
 
+
 # Cell 2 — input form
 @app.cell
 def _(mo, set_items):
     task = mo.ui.text(label="New task")
-    add = mo.ui.button(
-        label="Add",
-        on_click=lambda _: set_items(lambda d: d + [task.value])
-    )
+    add = mo.ui.button(label="Add", on_click=lambda _: set_items(lambda d: d + [task.value]))
     mo.hstack([task, add])
     return
+
 
 # Cell 3 — display (re-runs when state changes)
 @app.cell
@@ -78,6 +77,7 @@ def _(mo, get_items):
 def _(mo):
     get_n, set_n = mo.state(50)
     return get_n, set_n
+
 
 @app.cell
 def _(mo, get_n, set_n):

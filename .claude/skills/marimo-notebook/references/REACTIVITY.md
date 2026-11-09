@@ -22,6 +22,7 @@ def _():
     result_a = summarize(_temp)
     return (result_a,)
 
+
 @app.cell
 def _():
     _temp = different_computation()  # no conflict, _temp is cell-local

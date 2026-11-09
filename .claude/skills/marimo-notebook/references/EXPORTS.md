@@ -1,7 +1,7 @@
 marimo can export notebooks to several formats via the CLI.
 
 ```
-> uvx marimo export --help
+> uv run --package cursora-ml --group notebook marimo export --help
 Usage: marimo export [OPTIONS]
                      COMMAND [ARGS]...
 
@@ -12,7 +12,7 @@ Options:
 
 Commands:
   html       Run a notebook and export it as an HTML file.
-  html-wasm  Export a notebook as a WASM- powered marimo notebook. 
+  html-wasm  Export a notebook as a WASM- powered marimo notebook.
   ipynb      Export a marimo notebook as a Jupyter notebook
   md         Export a marimo notebook as a code fenced markdown file
   pdf        Export a marimo notebook as a PDF file.
@@ -21,21 +21,21 @@ Commands:
   thumbnail  Generate OpenGraph thumbnails for notebooks.
 ```
 
-You can learn more about each option by calling the command with the `--help` flag. 
+You can learn more about each option by calling the command with the `--help` flag.
 
 ## PDF Export
 
-Many people may be interested in exporting to a PDF. 
+Many people may be interested in exporting to a PDF.
 
 ```bash
-uvx marimo export pdf notebook.py -o notebook.pdf
+uv run --package cursora-ml --group notebook marimo export pdf notebook.py -o notebook.pdf
 ```
 
 PDF export uses `nbformat` and `nbconvert` under the hood. By default it uses the WebPDF exporter which requires Chromium. Install the dependencies:
 
 ```bash
-uv pip install nbformat nbconvert
-playwright install chromium
+uv add --package cursora-ml --group notebook nbformat nbconvert playwright
+uv run --package cursora-ml --group notebook playwright install chromium
 ```
 
 Useful flags:
@@ -49,7 +49,7 @@ Useful flags:
 ## Script Export
 
 ```bash
-uvx marimo export script notebook.py -o notebook.script.py
+uv run --package cursora-ml --group notebook marimo export script notebook.py -o notebook.script.py
 ```
 
 Flattens the notebook into a plain Python script in topological order.
@@ -62,5 +62,5 @@ These flags work across most export subcommands:
 - `--watch` — re-export automatically when the notebook file changes
 - `--sandbox` — run in an isolated `uv` environment
 - `-f`, `--force` — overwrite if output file already exists
-- `--` — pass CLI arguments to the notebook, e.g. `uvx marimo export html notebook.py -o out.html -- --arg value`
-- `-y` automatic yes to prompts on the terminal `uvx marimo -y CMD ...` 
+- `--` — pass CLI arguments to the notebook, e.g. `uv run --package cursora-ml --group notebook marimo export html notebook.py -o out.html -- --arg value`
+- `-y` automatic yes to prompts on the terminal `uv run --package cursora-ml --group notebook marimo -y CMD ...`

@@ -32,6 +32,6 @@ marimo searches for `.marimo.toml` in: current directory → parent directories 
 ## Useful Commands
 
 ```bash
-marimo config show       # view current config and file location
-marimo config describe   # list all available config options
+uv run --package cursora-ml --group notebook marimo config show       # view current config and file location
+uv run --package cursora-ml --group notebook marimo config describe   # list all available config options
 ```

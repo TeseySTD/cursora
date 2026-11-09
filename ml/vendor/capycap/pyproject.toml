@@ -1,0 +1,16 @@
+# Packaging wrapper for the vendored CapyCap engine (git submodule in ./upstream).
+# Upstream ships no pyproject.toml; this makes `import capycap` work via a uv path source.
+[project]
+name = "capycap"
+version = "0.0.0"
+description = "Clean-room CapyCap game engine (vendored, see upstream/README.md)."
+requires-python = ">=3.10"
+dependencies = ["numpy"]
+
+[build-system]
+requires = ["uv_build>=0.13.4,<0.14"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "capycap"
+module-root = "upstream"

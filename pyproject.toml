@@ -15,7 +15,7 @@ dev = [
 line-length = 100
 target-version = "py314"
 # .claude: agent skills are Markdown; vendored ones stay as imported from upstream.
-extend-exclude = [".claude"]
+extend-exclude = [".claude", "ml/vendor"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "SIM", "ASYNC", "RUF"]
@@ -32,3 +32,8 @@ python_version = "3.14"
 strict = true
 files = ["apps/api/src", "packages/features/src", "ml/src"]
 plugins = ["pydantic.mypy"]
+
+# Vendored submodule (ml/vendor/capycap/upstream), installed via a uv path source; untyped.
+[[tool.mypy.overrides]]
+module = ["capycap", "capycap.*"]
+ignore_missing_imports = true

@@ -4,7 +4,7 @@
   "type": "module",
   "packageManager": "pnpm@12.14.0",
   "engines": {
-    "node": ">=22.18.0"
+    "node": ">=22.22.1"
   },
   "scripts": {
     "prepare": "husky",
@@ -32,6 +32,7 @@
     "test:api": "uv run --package cursora-api pytest apps/api",
     "test:features": "uv run --package cursora-features pytest packages/features",
     "test:ml": "uv run --package cursora-ml pytest ml",
+    "test:ml:replay": "uv run --package cursora-ml --group notebook pytest ml/tests/test_replay.py",
     "test:widget": "pnpm --filter @cursora/widget test",
     "test:admin": "pnpm --filter @cursora/admin test",
     "build": "pnpm --filter @cursora/api-client build && pnpm --filter @cursora/widget build && pnpm --filter @cursora/admin build",

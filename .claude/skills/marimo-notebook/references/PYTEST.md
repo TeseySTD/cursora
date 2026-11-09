@@ -14,9 +14,12 @@ For example:
 @app.cell
 def __():
     import pytest
+
     def inc(x):
         return x + 1
+
     return inc, pytest
+
 
 @app.cell
 def __(inc, pytest):
@@ -32,6 +35,7 @@ def __(inc, pytest):
     @pytest.mark.parametrize(("x", "y"), [(3, 4), (4, 5)])
     def test_parameterized(x, y):
         assert inc(x) == y
+
     return
 ```
 
@@ -41,7 +45,7 @@ configuration file.
 ## Testing at the command-line
 
 ```bash
-pytest <notebook.py>
+uv run --package cursora-ml --group notebook pytest <notebook.py>
 ```
 
 runs and tests all notebook cells whose names start with `test_`, or cells that
@@ -63,6 +67,7 @@ app = marimo.App()
 def _():
     def inc(x):
         return x + 1
+
     return (inc,)
 
 
@@ -75,15 +80,18 @@ def test_fails(inc):
 def test_sanity(inc):
     assert inc(3) == 4, "This test passes"
 
+
 @app.cell
 def collection_of_tests(inc, pytest):
     @pytest.mark.parametrize(("x", "y"), [(3, 4), (4, 5)])
     def test_answer(x, y):
         assert inc(x) == y, "These tests should pass."
 
+
 @app.cell
 def imports():
     import pytest
+
     return pytest
 ```
 
@@ -133,7 +141,6 @@ FAILED test_notebook.py::test_fails - AssertionError: This test fails
 
 ## Using Pytest Fixtures
 
-
 marimo supports pytest fixtures, with one limitation: fixtures defined in one cell cannot be used in another cell, unless the fixtures were defined in the setup cell.
 
 **Fixtures defined in the setup cell**:
@@ -141,10 +148,12 @@ marimo supports pytest fixtures, with one limitation: fixtures defined in one ce
 ```python
 # test_notebook.py
 import marimo
+
 app = marimo.App()
 
 with app.setup:
     from fixtures import db_connection, sample_data
+
 
 @app.cell
 def _(sample_data):
@@ -158,6 +167,7 @@ def _(sample_data):
 @app.cell
 def _():
     import pytest
+
     return pytest
 
 
@@ -166,6 +176,7 @@ def _(pytest):
     @pytest.fixture
     def temp_file():
         import tempfile
+
         with tempfile.NamedTemporaryFile() as f:
             yield f
 
@@ -181,6 +192,7 @@ def _(pytest):
 @app.cell
 def _():
     import pytest
+
     return pytest
 
 
