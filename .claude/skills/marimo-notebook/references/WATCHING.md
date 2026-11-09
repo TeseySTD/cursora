@@ -7,7 +7,7 @@ marimo loads the notebook file into memory at startup. After that, it works from
 ## Solution: --watch
 
 ```bash
-marimo edit --watch notebook.py
+uv run --package cursora-ml --group notebook marimo edit --watch notebook.py
 ```
 
 This monitors the file for changes and streams them to the browser editor. By default, synced code appears as "stale" — the user manually runs cells via the "Run" button or the `runStale` hotkey.
@@ -15,7 +15,7 @@ This monitors the file for changes and streams them to the browser editor. By de
 For apps:
 
 ```bash
-marimo run --watch notebook.py
+uv run --package cursora-ml --group notebook marimo run --watch notebook.py
 ```
 
 This auto-refreshes when file changes are detected.
@@ -34,7 +34,7 @@ watcher_on_save = "autorun"
 Without `watchdog`, marimo falls back to polling:
 
 ```bash
-pip install watchdog
+uv add --package cursora-ml --group notebook watchdog
 ```
 
 ## Module Autoreloading
@@ -52,4 +52,4 @@ Use case: develop logic in Python modules, use the notebook as an orchestrating 
 
 ## Responding to other files
 
-marimo has `mo.watch.file` and `mo.watch.file` utilities that can cause cells to update when a file/folder updates. 
+marimo has `mo.watch.file` and `mo.watch.directory` utilities that can cause cells to update when a file/folder updates.

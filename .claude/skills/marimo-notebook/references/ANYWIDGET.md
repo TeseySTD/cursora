@@ -9,39 +9,39 @@ When writing an anywidget use vanilla javascript in `_esm` and do not forget abo
 import anywidget
 import traitlets
 
-
 class CounterWidget(anywidget.AnyWidget):
-    _esm = """
-    // Define the main render function
-    function render({ model, el }) {
-      let count = () => model.get("number");
-      let btn = document.createElement("b8utton");
-      btn.innerHTML = `count is ${count()}`;
-      btn.addEventListener("click", () => {
-        model.set("number", count() + 1);
-        model.save_changes();
-      });
-      model.on("change:number", () => {
-        btn.innerHTML = `count is ${count()}`;
-      });
-      el.appendChild(btn);
-    }
-    // Important! We must export at the bottom here!
-    export default { render };
-    """
-    _css = """button{
-      font-size: 14px;
-    }"""
-    number = traitlets.Int(0).tag(sync=True)
+_esm = """
+// Define the main render function
+function render({ model, el }) {
+let count = () => model.get("number");
+let btn = document.createElement("button");
+btn.innerHTML = `count is ${count()}`;
+btn.addEventListener("click", () => {
+model.set("number", count() + 1);
+model.save_changes();
+});
+model.on("change:number", () => {
+btn.innerHTML = `count is ${count()}`;
+});
+el.appendChild(btn);
+}
+// Important! We must export at the bottom here!
+export default { render };
+"""
+_css = """button{
+font-size: 14px;
+}"""
+number = traitlets.Int(0).tag(sync=True)
 
 widget = mo.ui.anywidget(CounterWidget())
 widget
 
 # Grabbing the widget from another cell, `.value` is a dictionary.
+
 print(widget.value["number"])
 </example>
 
-The above is a minimal example that could work for a simple counter widget. In general the widget can become much larger because of all the JavaScript and CSS required. Unless the widget is dead simple, you should consider using external files for `_esm` and `_css` using pathlib. 
+The above is a minimal example that could work for a simple counter widget. In general the widget can become much larger because of all the JavaScript and CSS required. Unless the widget is dead simple, you should consider using external files for `_esm` and `_css` using pathlib.
 
 When sharing the anywidget, keep the example minimal. No need to combine it with marimo ui elements unless explicitly stated to do so.
 
