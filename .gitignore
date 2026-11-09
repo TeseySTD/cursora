@@ -20,7 +20,7 @@ ml/data/*
 !ml/data/.gitkeep
 ml/models/*
 !ml/models/.gitkeep
-.ipynb_checkpoints/
+__marimo__/
 
 # Env
 .env

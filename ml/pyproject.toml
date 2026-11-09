@@ -11,11 +11,18 @@ dependencies = [
 
 [dependency-groups]
 dev = ["pytest>=9.1.1"]
-# Not installed by `pnpm bootstrap`; enabled on demand by `pnpm ml:notebook`.
-notebook = ["jupyterlab>=4.6.4"]
+# Not installed by `pnpm bootstrap`, so only ML work needs the CapyCap submodule checked out;
+# enabled on demand by `pnpm ml:notebook`.
+notebook = [
+    "capycap",
+    "huggingface-hub>=2.4.0",
+    "marimo>=0.25.2",
+    "polars>=2.1.0",
+]
 
 [tool.uv.sources]
 cursora-features = { workspace = true }
+capycap = { path = "vendor/capycap", editable = true }
 
 [build-system]
 requires = ["uv_build>=0.13.4,<0.14"]

@@ -4,7 +4,7 @@
 
 | Tool    | Version                                     | Notes                                                                                                 |
 | ------- | ------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| Node.js | 24 LTS (`.nvmrc`); ≥ 22.18 is supported     | `nvm use` / `fnm use` picks up `.nvmrc`                                                               |
+| Node.js | 24 LTS (`.nvmrc`); ≥ 22.22.1 is supported   | `nvm use` / `fnm use` picks up `.nvmrc`                                                               |
 | pnpm    | pinned in `package.json` (`packageManager`) | Run `corepack enable`. If `corepack` is missing (Node ≥ 25 no longer bundles it): `npm i -g corepack` |
 | uv      | latest                                      | Installs the Python version from `.python-version` automatically                                      |
 | Docker  | with Compose v2                             | Postgres, full stack, `pnpm lint:ci`                                                                  |
@@ -35,7 +35,8 @@ All tasks are root `package.json` scripts; run them from the repo root.
 | `pnpm api:check`                                  | Fail if the committed `openapi.json` differs from the FastAPI export              |
 | `pnpm docker:up` / `docker:down` / `docker:build` | Full stack in Docker                                                              |
 | `pnpm docker:config` / `docker:nginx-test`        | Validate the Compose files / the Nginx config                                     |
-| `pnpm ml:notebook`                                | JupyterLab in `ml/notebooks`                                                      |
+| `pnpm ml:notebook`                                | marimo editor in `ml/notebooks` (needs the CapyCap submodule, see `ml/README.md`) |
+| `pnpm test:ml:replay`                             | CapyCap replay tests (`test:ml` skips them without the submodule's group)         |
 | `pnpm check`                                      | format:check + lint + typecheck + test + api:check — run before every PR          |
 
 Integration tests (`apps/api/tests/integration`) need Postgres (`pnpm db:up`). Without it

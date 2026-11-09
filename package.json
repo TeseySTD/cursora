@@ -4,9 +4,10 @@
   "type": "module",
   "packageManager": "pnpm@12.14.0",
   "engines": {
-    "node": ">=22.18.0"
+    "node": ">=22.22.1"
   },
   "scripts": {
+    "prepare": "husky",
     "bootstrap": "pnpm install && uv sync --all-packages",
     "dev": "concurrently -k -n api,admin,widget -c blue,magenta,green \"pnpm dev:api\" \"pnpm dev:admin\" \"pnpm dev:widget\"",
     "dev:api": "uv run --package cursora-api uvicorn cursora_api.main:create_app --factory --reload --reload-dir apps/api/src --reload-dir packages/features/src",
@@ -31,6 +32,7 @@
     "test:api": "uv run --package cursora-api pytest apps/api",
     "test:features": "uv run --package cursora-features pytest packages/features",
     "test:ml": "uv run --package cursora-ml pytest ml",
+    "test:ml:replay": "uv run --package cursora-ml --group notebook pytest ml/tests/test_replay.py",
     "test:widget": "pnpm --filter @cursora/widget test",
     "test:admin": "pnpm --filter @cursora/admin test",
     "build": "pnpm --filter @cursora/api-client build && pnpm --filter @cursora/widget build && pnpm --filter @cursora/admin build",
@@ -44,7 +46,7 @@
     "docker:config": "node scripts/compose.mjs prod config --quiet",
     "docker:nginx-test": "node scripts/compose.mjs prod run --rm --no-deps nginx nginx -t",
     "skills:outdated": "node scripts/skills-outdated.mjs",
-    "ml:notebook": "uv run --package cursora-ml --group notebook jupyter lab --notebook-dir ml/notebooks",
+    "ml:notebook": "uv run --package cursora-ml --group notebook marimo edit ml/notebooks",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm api:check"
   },
   "devDependencies": {
@@ -55,6 +57,8 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.7",
     "globals": "^17.13.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0",
     "prettier": "^3.9.10",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.72.0"

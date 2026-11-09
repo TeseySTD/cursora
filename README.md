@@ -11,7 +11,7 @@ See [docs/architecture.md](docs/architecture.md) for the components and request 
 
 ## Quick start
 
-Prerequisites: Node.js 24 (see `.nvmrc`, ≥ 22.18 works), [uv](https://docs.astral.sh/uv/),
+Prerequisites: Node.js 24 (see `.nvmrc`, ≥ 22.22.1 works), [uv](https://docs.astral.sh/uv/),
 Docker. Details in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ```sh

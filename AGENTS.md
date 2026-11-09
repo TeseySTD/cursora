@@ -25,20 +25,20 @@ removed in a separate clean-up.
 
 ## Tech stack
 
-| Area                                  | Technology                                                                                 |
-| ------------------------------------- | ------------------------------------------------------------------------------------------ |
-| Languages                             | Python 3.14, TypeScript 6 (strict)                                                         |
-| Monorepo                              | pnpm 12 workspaces (via corepack) + uv workspace, one lockfile each; Node.js 24 (`.nvmrc`) |
-| Backend (`apps/api`)                  | FastAPI, Pydantic v2 + pydantic-settings, SQLAlchemy 2.1 async + asyncpg, Alembic, uvicorn |
-| Shared features (`packages/features`) | Pure Python, no third-party dependencies                                                   |
-| ML (`ml`)                             | pandas 3, scikit-learn 1.9, JupyterLab (optional `notebook` group)                         |
-| Widget (`apps/widget`)                | React 19, Vite 8 (single IIFE `widget.js`), Tailwind CSS 4, shadcn/ui (Radix), Shadow DOM  |
-| Admin (`apps/admin`)                  | React 19, React Router 8 (data mode), TanStack Query 5, Tailwind CSS 4, shadcn/ui          |
-| API client (`packages/api-client`)    | Committed `openapi.json` -> `@hey-api/openapi-ts` fetch client (generated, git-ignored)    |
-| Database                              | PostgreSQL 18 (JSONB where useful). **No Redis.**                                          |
-| Tests                                 | pytest + pytest-asyncio + httpx; Vitest 5 + Testing Library + jsdom                        |
-| Quality                               | ruff, mypy `--strict` (pydantic plugin), ESLint flat config, Prettier, actionlint          |
-| Infra / CI                            | Docker Compose, Nginx (reverse proxy), GitHub Actions (`ci-ok` required), Dependabot       |
+| Area                                  | Technology                                                                                                          |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Languages                             | Python 3.14, TypeScript 6 (strict)                                                                                  |
+| Monorepo                              | pnpm 12 workspaces (via corepack) + uv workspace, one lockfile each; Node.js 24 (`.nvmrc`)                          |
+| Backend (`apps/api`)                  | FastAPI, Pydantic v2 + pydantic-settings, SQLAlchemy 2.1 async + asyncpg, Alembic, uvicorn                          |
+| Shared features (`packages/features`) | Pure Python, no third-party dependencies                                                                            |
+| ML (`ml`)                             | pandas 3, scikit-learn 1.9; optional `notebook` group (marimo, polars, CapyCap submodule)                           |
+| Widget (`apps/widget`)                | React 19, Vite 8 (single IIFE `widget.js`), Tailwind CSS 4, shadcn/ui (Radix), Shadow DOM                           |
+| Admin (`apps/admin`)                  | React 19, React Router 8 (data mode), TanStack Query 5, Tailwind CSS 4, shadcn/ui                                   |
+| API client (`packages/api-client`)    | Committed `openapi.json` -> `@hey-api/openapi-ts` fetch client (generated, git-ignored)                             |
+| Database                              | PostgreSQL 18 (JSONB where useful). **No Redis.**                                                                   |
+| Tests                                 | pytest + pytest-asyncio + httpx; Vitest 5 + Testing Library + jsdom                                                 |
+| Quality                               | ruff, mypy `--strict` (pydantic plugin), ESLint flat config, Prettier, actionlint, husky + lint-staged (pre-commit) |
+| Infra / CI                            | Docker Compose, Nginx (reverse proxy), GitHub Actions (`ci-ok` required), Dependabot                                |
 
 Rationale: [docs/adr/0001-monorepo-structure.md](docs/adr/0001-monorepo-structure.md).
 
@@ -61,7 +61,8 @@ apps/
 packages/
   features/       cursora-features: feature extraction shared by api AND ml
   api-client/     committed openapi.json; hey-api TS client generated on install (git-ignored)
-ml/               cursora-ml: bot_generator, training, notebooks (pandas, scikit-learn)
+ml/               cursora-ml: bot_generator, training, replay, notebooks (pandas, scikit-learn)
+  vendor/capycap/ packaging wrapper; upstream/ is a git submodule (optional `notebook` group)
 infra/            compose/ (compose.yml, compose.dev.yml), docker/, nginx/
 scripts/          cross-platform Node helpers used by package.json scripts
 docs/             project-context.md, architecture.md, adr/
@@ -74,21 +75,25 @@ openspec/         config.yaml only (specs and changes are local, see below)
 Run everything from the repo root through the root `package.json` scripts, the only task runner
 (no Makefile or justfile).
 
-| Task         | Command                                                                                                |
-| ------------ | ------------------------------------------------------------------------------------------------------ |
-| Install      | `corepack enable`, then `pnpm bootstrap` (pnpm install + `uv sync --all-packages`)                     |
-| Dev servers  | `pnpm dev` (API :8000, admin :5173, widget harness :5174) or `pnpm dev:api`, `dev:admin`, `dev:widget` |
-| Database     | `pnpm db:up`, `pnpm db:migrate`, `pnpm db:revision "<message>"`, `pnpm db:down`                        |
-| Lint, format | `pnpm lint`, `pnpm format`, `pnpm format:check`, `pnpm lint:ci` (actionlint in Docker)                 |
-| Type check   | `pnpm typecheck` (mypy strict + `tsc` in every JS package)                                             |
-| Tests        | `pnpm test`, or `pnpm test:api`, `test:features`, `test:ml`, `test:widget`, `test:admin`               |
-| Build        | `pnpm build`; widget size `pnpm size:widget`; bundle treemap `pnpm analyze:widget`                     |
-| API contract | `pnpm api:openapi` (export `openapi.json` + regenerate the client), `pnpm api:check`                   |
-| Docker       | `pnpm docker:up`, `docker:down`, `docker:build`, `docker:config`, `docker:nginx-test`                  |
-| Everything   | `pnpm check` = format:check + lint + typecheck + test + api:check                                      |
+| Task         | Command                                                                                                    |
+| ------------ | ---------------------------------------------------------------------------------------------------------- |
+| Install      | `corepack enable`, then `pnpm bootstrap` (pnpm install + `uv sync --all-packages`)                         |
+| Dev servers  | `pnpm dev` (API :8000, admin :5173, widget harness :5174) or `pnpm dev:api`, `dev:admin`, `dev:widget`     |
+| Database     | `pnpm db:up`, `pnpm db:migrate`, `pnpm db:revision "<message>"`, `pnpm db:down`                            |
+| Lint, format | `pnpm lint`, `pnpm format`, `pnpm format:check`, `pnpm lint:ci` (actionlint in Docker)                     |
+| Type check   | `pnpm typecheck` (mypy strict + `tsc` in every JS package)                                                 |
+| Tests        | `pnpm test`, or `pnpm test:api`, `test:features`, `test:ml`, `test:ml:replay`, `test:widget`, `test:admin` |
+| Notebooks    | `pnpm ml:notebook` (marimo editor in `ml/notebooks`)                                                       |
+| Build        | `pnpm build`; widget size `pnpm size:widget`; bundle treemap `pnpm analyze:widget`                         |
+| API contract | `pnpm api:openapi` (export `openapi.json` + regenerate the client), `pnpm api:check`                       |
+| Docker       | `pnpm docker:up`, `docker:down`, `docker:build`, `docker:config`, `docker:nginx-test`                      |
+| Everything   | `pnpm check` = format:check + lint + typecheck + test + api:check                                          |
 
 - Integration tests (`apps/api/tests/integration`) need Postgres (`pnpm db:up`). Without it they
   are skipped; with `REQUIRE_DB=1` (set in CI) they fail instead.
+- The CapyCap engine is a git submodule (`git submodule update --init ml/vendor/capycap/upstream`)
+  installed only through the `notebook` dependency group, so nothing outside ML work needs it.
+  `pnpm test:ml` skips the replay tests without it; `pnpm test:ml:replay` (run in CI) needs it.
 - Python dependencies: `uv add --package <cursora-api|cursora-features|cursora-ml> <pkg>`
   (`--dev` for test tools). Never `pip install`. JS dependencies:
   `pnpm --filter <package name> add <pkg>`. Commit the updated lockfile; never edit lockfiles by
@@ -104,7 +109,7 @@ Run everything from the repo root through the root `package.json` scripts, the o
 - `RiskEvaluator` is pure: no I/O, no DB, no clock, no randomness. Inputs in, decision out. The
   ML score is an optional input via the `MlScorer` port, and the engine must decide without it.
 - Feature extraction lives only in `packages/features`; the api and ml both import it (no
-  train/serve skew). The api must not depend on pandas, scikit-learn or jupyter.
+  train/serve skew). The api must not depend on pandas, scikit-learn, marimo or CapyCap.
 - No business logic in Nginx: it is only a reverse proxy for Cursora's own services. Do not build
   on the old `auth_request` gate; it is replaced as part of token verification
   ([ADR 0002](docs/adr/0002-token-verification-integration.md)).
@@ -184,12 +189,15 @@ also read this folder). Agents load a skill when its description matches the tas
 | `vitest`                                                                                                                                                    | [antfu/skills](https://github.com/antfu/skills), MIT                                        | writing and configuring widget and admin tests                                             | Vitest 5 is newer than most models' knowledge; maintained by a Vitest core team member                 |
 | `accessibility`                                                                                                                                             | [addyosmani/web-quality-skills](https://github.com/addyosmani/web-quality-skills), MIT      | widget challenge UI and admin forms                                                        | a CAPTCHA must not lock people out: WCAG 2.2, including 3.3.8 Accessible Authentication                |
 | `shadcn`                                                                                                                                                    | [shadcn-ui/ui](https://github.com/shadcn-ui/ui), MIT (modified)                             | adding or composing shadcn/ui components in either app                                     | official composition, form and accessibility rules; its automatic `npx shadcn@latest` run removed      |
+| `marimo-notebook`                                                                                                                                           | [marimo-team/skills](https://github.com/marimo-team/skills), Apache-2.0 (modified)          | writing or changing notebooks in `ml/notebooks`                                            | the ML notebooks are marimo files with their own cell format and reactivity rules                      |
+| `marimo-batch`                                                                                                                                              | [marimo-team/skills](https://github.com/marimo-team/skills), Apache-2.0 (modified)          | preparing a marimo notebook for scheduled or CLI runs                                      | Pydantic-parameterised notebook runs for training jobs                                                 |
 
 Pinned commits and review notes are in each skill's `SOURCE.md`.
 
 Third-party skills are vendored copies pinned to a commit, each with its upstream `LICENSE` and a
 `SOURCE.md` (origin, commit, review notes, local modifications). Update them only by re-importing
-from upstream and reviewing the diff; never edit them in place. `pnpm skills:outdated` lists the
+from upstream and reviewing the diff; never edit them in place, except the
+marimo skills, which are adapted to this repo (`SOURCE.md` lists the changes to re-apply). `pnpm skills:outdated` lists the
 skills whose upstream folder changed after the pinned commit. New third-party skills need the
 same review: read every file, reject hidden instructions, `allowed-tools` grants, dynamic-context
 commands that run on load, network calls and telemetry. Check skills with
@@ -215,6 +223,11 @@ Where a third-party skill's generic advice conflicts with this repo, the repo wi
   `lang` from the widget.
 - `shadcn`: run the CLI pinned in the app (`pnpm --filter <app> exec shadcn ...`); widget portals
   go into the shadow root.
+- `marimo-notebook`: run marimo through `pnpm ml:notebook` or `uv run`, not unpinned `uvx marimo`
+  or `uv --with marimo`; add packages with `uv add`, not `pip install`; no SQLModel, SQLAlchemy
+  2.0 async only.
+- `marimo-batch`: no Weights & Biases or remote jobs (Hugging Face Jobs and similar) without a
+  team decision; agents do not read `.env`, whatever the examples' python-dotenv calls suggest.
 
 ## Git, commits and pull requests
 
@@ -240,7 +253,8 @@ Never:
   defaults only and is the one to update);
 - edit generated files by hand: `packages/api-client/src/generated/`, `openapi.json` (use
   `pnpm api:openapi`), `pnpm-lock.yaml` and `uv.lock` (use pnpm / uv), the OpenSpec-generated
-  `.claude/skills/openspec-*` and `.claude/commands/opsx/`, or the vendored third-party skills;
+  `.claude/skills/openspec-*` and `.claude/commands/opsx/`, or the vendored third-party skills
+  (the marimo skills are adapted to this repo: follow their `SOURCE.md`);
 - edit an Alembic migration that is already on `main` (add a new one);
 - commit, push, merge, rebase shared branches or force-push unless the user asks; never push to
   `main`, never skip hooks or CI (`--no-verify`), never weaken or delete tests or checks to make
