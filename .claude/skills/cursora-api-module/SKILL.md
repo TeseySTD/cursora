@@ -33,7 +33,7 @@ service`), never through another module's repository, models or tables.
 - Fingerprints are stored and compared only as HMAC hashes; never log, store or return raw
   fingerprints.
 - Postgres is the only datastore (JSONB for flexible signal data). No Redis, no new stores.
-- The api must not depend on pandas, scikit-learn or jupyter; feature extraction comes from
+- The api must not depend on pandas, scikit-learn, marimo or CapyCap; feature extraction comes from
   `cursora_features` (`packages/features`).
 - Undecided product rules, thresholds, weights or status codes: leave `TODO(team): ...`
   instead of inventing values.
