@@ -19,10 +19,10 @@ JSONL, one session per line (same fields as the dataset):
 
 ## Bot types (increasing realism)
 
-| botType | Behaviour |
-|---|---|
-| `linear_bot` | Straight line from start to end at constant speed. No noise, no pauses, button always down. |
-| `noisy_bot` | Straight scripted path + correlated (AR(1)) noise, 0-3 random pauses where the cursor holds still, occasional short button lift during a pause. |
+| botType      | Behaviour                                                                                                                                                                   |
+| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `linear_bot` | Straight line from start to end at constant speed. No noise, no pauses, button always down.                                                                                 |
+| `noisy_bot`  | Straight scripted path + correlated (AR(1)) noise, 0-3 random pauses where the cursor holds still, occasional short button lift during a pause.                             |
 | `bezier_bot` | Cubic Bezier path with random curvature, minimum-jerk (bell-shaped) speed profile, correlated jitter that fades near the target, and a 30% chance of overshoot-and-correct. |
 
 Start/end points are random by default; duration is derived from distance and a
