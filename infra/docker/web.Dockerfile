@@ -3,7 +3,7 @@
 
 # ---- build: admin + widget static files ----
 # 24.22.1 (.nvmrc) has no amd64 image yet; bump when published.
-FROM node:24.22.0-trixie-slim AS build
+FROM node:24.22.2-trixie-slim AS build
 ENV PNPM_HOME=/pnpm \
     COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 ENV PATH="$PNPM_HOME:$PATH"
