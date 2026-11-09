@@ -21,6 +21,7 @@ def test_sessions_have_dataset_format() -> None:
         assert s["physicsTickCount"] == len(s["tickInputs"]) >= 2
         for tick in s["tickInputs"]:
             assert set(tick) == {"x", "y", "isDown"}
+            assert isinstance(tick["isDown"], bool)
             assert 0 <= tick["x"] <= 200
             assert 0 <= tick["y"] <= 200
 
