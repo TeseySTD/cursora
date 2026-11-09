@@ -9,7 +9,7 @@ dependencies = [
   "cursora-features",
   "fastapi>=0.157.0",
   "pydantic-settings>=2.16.1",
-  "sqlalchemy[asyncio]>=2.1.5",
+  "sqlalchemy[asyncio]>=2.1.6",
   "uvicorn>=0.54.0",
 ]
 
