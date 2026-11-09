@@ -240,11 +240,13 @@
       });
     }
     pointer(f.i);
+    // The final frame is the session's last tick, which may be closer than one stride.
+    const tick = Math.min(k * D.stride, D.n_ticks - 1);
     document.getElementById("lbl").textContent =
       "t = " +
-      ((k * D.stride) / 240).toFixed(2) +
+      (tick / 240).toFixed(2) +
       " s · tick " +
-      k * D.stride +
+      tick +
       " / " +
       D.n_ticks +
       (k === N - 1 ? (D.solved ? " · solved" : " · not solved") : "");

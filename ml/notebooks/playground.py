@@ -23,6 +23,7 @@ def _(pl):
         repo_id="Capycap-AI/CaptchaSolve30k",
         repo_type="dataset",
         filename="train.jsonl",
+        revision="c273c662488def85b4a240e67776a12b4dbc9913",  # a dataset update must be explicit
         local_dir=Path(__file__).resolve().parent.parent / "data" / "captchasolve30k",
     )
     df = pl.read_ndjson(path)
@@ -72,6 +73,11 @@ def _(np, pl):
     # TODO(team): choose the observation window the widget will collect.
     WINDOW_TICKS = 720  # 3 s, provisional
 
+    # Exploration only: features that feed a real model move to packages/features (no skew).
+    def first_movement(ticks: list[dict]) -> int | None:
+        """Index of the first tick with a non-zero pointer position, if there is one."""
+        return next((i for i, t in enumerate(ticks) if t["x"] or t["y"]), None)
+
     def session_features(ticks: list[dict]) -> dict[str, float] | None:
         """Behavioural features over a fixed window starting at the first movement.
 
@@ -79,16 +85,16 @@ def _(np, pl):
         only indexes the raw input stream. Consecutive ticks can repeat a sample,
         so keep the first tick of each distinct `sampleIndex` and use its tick time.
         """
-        xy_all = np.array([[t["x"], t["y"]] for t in ticks])
-        moving = np.flatnonzero(np.abs(xy_all).sum(axis=1) > 0)
-        start = moving[0]
-        if len(ticks) - start < WINDOW_TICKS:
-            return None  # too short for the window
+        start = first_movement(ticks)
+        if start is None or len(ticks) - start < WINDOW_TICKS:
+            return None  # never moves, or too short for the window
         win = ticks[start : start + WINDOW_TICKS]
         first_tick = {}
         for i, t in enumerate(win):
             first_tick.setdefault(t["sampleIndex"], i)
         tick_idx = np.array(sorted(first_tick.values()))
+        if len(tick_idx) < 3:
+            return None  # acceleration needs at least three distinct samples
         xy = np.array([[win[i]["x"], win[i]["y"]] for i in tick_idx])
 
         dt = np.diff(tick_idx) / TICK_HZ  # seconds
@@ -110,7 +116,7 @@ def _(np, pl):
             frame.filter(pl.Series(keep)).select("index", "gameType", "touchscreen")
         )
 
-    return WINDOW_TICKS, featurize
+    return WINDOW_TICKS, featurize, first_movement
 
 
 @app.cell
@@ -219,7 +225,7 @@ def _():
 
 
 @app.cell
-def _(WINDOW_TICKS, df, mouse_scored, render_replay, simulate):
+def _(WINDOW_TICKS, df, first_movement, mouse_scored, render_replay, simulate):
     from functools import lru_cache
 
     @lru_cache(maxsize=32)
@@ -228,7 +234,7 @@ def _(WINDOW_TICKS, df, mouse_scored, render_replay, simulate):
         row = df.filter(df["index"] == session_id).row(0, named=True)
         score = mouse_scored.filter(mouse_scored["index"] == session_id)["score"][0]
         ticks = row["tickInputs"]
-        first = next(i for i, t in enumerate(ticks) if t["x"] or t["y"])
+        first = first_movement(ticks)  # never None: only featurized sessions are scored
         data = simulate(row["gameType"], row["puzzleSeed"], ticks)
         title = (
             f"session #{session_id} · {row['gameType']}<br>"

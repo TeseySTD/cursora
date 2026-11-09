@@ -103,6 +103,7 @@ jobs:
       - run: pnpm test:api
       - run: pnpm test:features
       - run: pnpm test:ml
+      - run: pnpm test:ml:replay
 
   frontend:
     needs: changes

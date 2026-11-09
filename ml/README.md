@@ -14,15 +14,16 @@ Prerequisites are the repo's: [uv](https://docs.astral.sh/uv/) and pnpm (see the
 #    Fresh clone: `git clone --recurse-submodules ...` does this for you.
 git submodule update --init ml/vendor/capycap/upstream
 
-# 2. Install the uv workspace (includes cursora-ml and the vendored capycap).
+# 2. Install the uv workspace (includes cursora-ml, but not the optional `notebook` group).
 pnpm bootstrap
 
 # 3. Open the notebooks (installs the `notebook` dependency group on demand).
 pnpm ml:notebook
 ```
 
-If `import capycap` fails with `ModuleNotFoundError`, the submodule is empty or uv hasn't
-synced: repeat steps 1 and 2.
+CapyCap is in the optional `notebook` dependency group, so the rest of the monorepo works without
+the submodule. If `import capycap` fails with `ModuleNotFoundError`, the submodule is empty or
+the group isn't installed: repeat step 1 and use `pnpm ml:notebook` or `pnpm test:ml:replay`.
 
 ## Layout
 
@@ -48,8 +49,8 @@ on first run by `notebooks/playground.py` (`huggingface_hub.hf_hub_download`) in
 `data/captchasolve30k/` and reused afterwards. Nothing under `data/` is committed.
 
 30k human sessions of three CapyCap games, as JSONL with `train` / `validation` / `test` splits.
-The notebook only fetches `train.jsonl`. Full card: `data/captchasolve30k/README.md` once
-downloaded, or the Hugging Face page.
+The notebook only fetches `train.jsonl`, pinned to a dataset commit. Full card: the
+[Hugging Face page](https://huggingface.co/datasets/Capycap-AI/CaptchaSolve30k).
 
 | Field              | Type   | Notes                                                      |
 | ------------------ | ------ | ---------------------------------------------------------- |

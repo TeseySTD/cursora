@@ -341,9 +341,7 @@ name = "cursora-ml"
 version = "0.1.0"
 source = { editable = "ml" }
 dependencies = [
-    { name = "capycap" },
     { name = "cursora-features" },
-    { name = "huggingface-hub" },
     { name = "pandas" },
     { name = "scikit-learn" },
 ]
@@ -353,15 +351,15 @@ dev = [
     { name = "pytest" },
 ]
 notebook = [
+    { name = "capycap" },
+    { name = "huggingface-hub" },
     { name = "marimo" },
     { name = "polars" },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "capycap", editable = "ml/vendor/capycap" },
     { name = "cursora-features", editable = "packages/features" },
-    { name = "huggingface-hub", specifier = ">=2.4.0" },
     { name = "pandas", specifier = ">=3.0.6" },
     { name = "scikit-learn", specifier = ">=1.9.1" },
 ]
@@ -369,6 +367,8 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [{ name = "pytest", specifier = ">=9.1.1" }]
 notebook = [
+    { name = "capycap", editable = "ml/vendor/capycap" },
+    { name = "huggingface-hub", specifier = ">=2.4.0" },
     { name = "marimo", specifier = ">=0.25.2" },
     { name = "polars", specifier = ">=2.1.0" },
 ]
