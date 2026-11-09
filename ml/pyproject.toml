@@ -10,7 +10,7 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = ["pytest>=9.1.1"]
+dev = ["pytest>=9.2.0"]
 # Not installed by `pnpm bootstrap`, so only ML work needs the CapyCap submodule checked out;
 # enabled on demand by `pnpm ml:notebook`.
 notebook = [
