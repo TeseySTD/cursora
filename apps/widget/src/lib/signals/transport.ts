@@ -13,12 +13,7 @@ export interface SignalTransport {
   send(batch: SignalBatch, options: SendOptions): Promise<void>;
 }
 
-/**
- * Placeholder until the API accepts signals: drops every batch.
- *
- * TODO(team): signal ingestion endpoint and payload. The real transport sends the batch with
- * `credentials: "include"`, so the browser attaches the HttpOnly session cookie.
- */
+/** Drops every batch: for tests and pages that mount the widget without the API. */
 export const noopTransport: SignalTransport = {
   send: () => Promise.resolve(),
 };

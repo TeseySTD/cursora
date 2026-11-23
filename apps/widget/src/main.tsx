@@ -1,6 +1,7 @@
 // IIFE entry: runs synchronously when the host page loads <script src=".../widget.js" data-site-key="...">.
 import { mountWidget } from "./mount";
 import { openSession } from "./lib/session";
+import { createApiTransport } from "./lib/signals";
 
 const script = document.currentScript;
 
@@ -15,7 +16,16 @@ if (script instanceof HTMLScriptElement) {
     // (open question in CAPTHCA-16).
     const apiBaseUrl = new URL("../api", script.src).href;
     // TODO(team): mount position — right after the <script> tag, or into an explicit container?
-    const widget = mountWidget(script, { siteKey, view: { state: "hidden" } }, "afterend");
+    // A batch without a live session is rejected; the transport then opens a new session and
+    // drops the batch instead of retrying it (CAPTHCA-17 AC4).
+    const signalTransport = createApiTransport(apiBaseUrl, {
+      onSessionLost: () => openSession(apiBaseUrl, siteKey),
+    });
+    const widget = mountWidget(
+      script,
+      { siteKey, view: { state: "hidden" }, signalTransport },
+      "afterend",
+    );
     openSession(apiBaseUrl, siteKey)
       .then((session) => {
         if (session.state === "challenge_required") widget.setView({ state: "checkbox" });

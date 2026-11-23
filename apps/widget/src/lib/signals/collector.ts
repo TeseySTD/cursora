@@ -1,4 +1,4 @@
-import type { EnvironmentSignal, Signal } from "./types";
+import type { EnvironmentSignal, PointerType, Signal } from "./types";
 
 export interface CollectorOptions {
   /**
@@ -39,7 +39,7 @@ export function startCollector(
       t,
       x: event.clientX,
       y: event.clientY,
-      pointer: event.pointerType,
+      pointer: toPointerType(event.pointerType),
     });
   };
 
@@ -51,7 +51,7 @@ export function startCollector(
       y: event.clientY,
       button: event.button,
       // `click` is a PointerEvent in current browsers; older ones fire a plain MouseEvent.
-      pointer: "pointerType" in event ? String(event.pointerType) : "mouse",
+      pointer: "pointerType" in event ? toPointerType(event.pointerType) : "mouse",
     });
   };
 
@@ -66,20 +66,20 @@ export function startCollector(
   };
 }
 
+/** The API accepts only the standard pointer types; anything else is reported as none. */
+function toPointerType(value: unknown): PointerType {
+  return value === "mouse" || value === "touch" || value === "pen" ? value : "";
+}
+
 function readEnvironment(win: Window): EnvironmentSignal {
-  const { navigator, screen } = win;
+  const { navigator } = win;
   return {
     type: "env",
     t: win.performance.now(),
-    language: navigator.language,
-    languages: navigator.languages,
-    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    screen: { width: screen.width, height: screen.height, colorDepth: screen.colorDepth },
     viewport: { width: win.innerWidth, height: win.innerHeight },
     devicePixelRatio: win.devicePixelRatio,
-    hardwareConcurrency: navigator.hardwareConcurrency,
     maxTouchPoints: navigator.maxTouchPoints,
-    cookieEnabled: navigator.cookieEnabled,
     webdriver: navigator.webdriver,
+    cookieEnabled: navigator.cookieEnabled,
   };
 }

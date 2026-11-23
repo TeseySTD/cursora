@@ -12,7 +12,7 @@ export interface MountOptions extends WidgetActions {
   siteKey: string;
   /** What to show first. TODO(team): initial view once the API drives it. */
   view?: WidgetView;
-  /** Where signal batches go. Defaults to a no-op until the API accepts signals. */
+  /** Where signal batches go. Defaults to a no-op; `main.tsx` sends them to the API. */
   signalTransport?: SignalTransport;
 }
 

@@ -4,6 +4,7 @@ import type { SignalTransport } from "./transport";
 
 export type { Signal, SignalBatch } from "./types";
 export { consoleTransport, noopTransport, type SignalTransport } from "./transport";
+export { createApiTransport, type ApiTransportOptions } from "./apiTransport";
 
 export type SignalOptions = CollectorOptions & BatcherOptions;
 

@@ -10,7 +10,10 @@ export interface BatcherOptions {
 
 export interface Batcher {
   push(signal: Signal): void;
-  /** Sends the buffered signals now, if any. */
+  /**
+   * Sends the buffered signals now, even none: the batch still carries the time on page, which
+   * is all there is from a visitor who does not move the pointer.
+   */
   flush(options?: { keepalive?: boolean }): void;
   /** Sends what is left and stops the timer and page listeners. */
   stop(): void;
@@ -23,6 +26,9 @@ const DEFAULT_MAX_BATCH_SIZE = 100;
  * Buffers signals and sends them in batches: on a timer, when the buffer is full, and when the
  * page is hidden (the last chance on mobile, where unload events often never fire).
  *
+ * The timer skips an empty buffer, so an idle page sends nothing; the other occasions always
+ * send, so the time on page reaches the API even without any movement.
+ *
  * A batch the transport fails to send is dropped.
  * TODO(team): retry policy for failed batches.
  */
@@ -34,36 +40,42 @@ export function createBatcher(
     maxBatchSize = DEFAULT_MAX_BATCH_SIZE,
   }: BatcherOptions = {},
 ): Batcher {
+  const now = () => doc.defaultView?.performance.now() ?? 0;
   let buffer: Signal[] = [];
 
-  const flush = ({ keepalive = false } = {}) => {
-    if (buffer.length === 0) return;
+  const send = ({ keepalive = false } = {}) => {
     const signals = buffer;
     buffer = [];
-    transport.send({ signals }, { keepalive }).catch((error: unknown) => {
+    transport.send({ t: now(), signals }, { keepalive }).catch((error: unknown) => {
       console.error("[cursora] could not send signals", error);
     });
   };
 
-  const timer = setInterval(flush, flushIntervalMs);
+  const timer = setInterval(() => {
+    if (buffer.length > 0) send();
+  }, flushIntervalMs);
   const onVisibilityChange = () => {
-    if (doc.visibilityState === "hidden") flush({ keepalive: true });
+    if (doc.visibilityState === "hidden") send({ keepalive: true });
   };
-  const onPageHide = () => flush({ keepalive: true });
+  const onPageHide = () => send({ keepalive: true });
   doc.addEventListener("visibilitychange", onVisibilityChange);
   doc.defaultView?.addEventListener("pagehide", onPageHide);
 
+  let stopped = false;
   return {
     push(signal) {
+      if (stopped) return;
       buffer.push(signal);
-      if (buffer.length >= maxBatchSize) flush();
+      if (buffer.length >= maxBatchSize) send();
     },
-    flush,
+    flush: send,
     stop() {
+      if (stopped) return;
+      stopped = true;
       clearInterval(timer);
       doc.removeEventListener("visibilitychange", onVisibilityChange);
       doc.defaultView?.removeEventListener("pagehide", onPageHide);
-      flush();
+      send();
     },
   };
 }

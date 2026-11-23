@@ -65,7 +65,19 @@ export default defineConfig(({ command, mode }) => ({
   // Library mode does not replace process.env.NODE_ENV, which React reads.
   define: command === "build" ? { "process.env.NODE_ENV": JSON.stringify("production") } : {},
   // Dev port from the shell environment (not .env); see .env.example.
-  server: { port: Number(process.env.WIDGET_DEV_PORT ?? 5174), strictPort: true },
+  server: {
+    port: Number(process.env.WIDGET_DEV_PORT ?? 5174),
+    strictPort: true,
+    proxy: {
+      // Mirrors Nginx in Docker: /api/* -> FastAPI with the /api prefix stripped. Same origin,
+      // so the harness gets the session cookie without CORS.
+      "/api": {
+        target: `http://127.0.0.1:${process.env.UVICORN_PORT ?? 8000}`,
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ""),
+      },
+    },
+  },
   build: {
     lib: {
       entry: "src/main.tsx",

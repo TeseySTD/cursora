@@ -37,6 +37,32 @@ describe("collector", () => {
     expect(signals[2]).toMatchObject({ x: 30, y: 40, button: 0, pointer: "touch" });
   });
 
+  it("records only coarse browser parameters, nothing fingerprint-like", () => {
+    const signals: Signal[] = [];
+    startCollector(document, (s) => signals.push(s))();
+
+    expect(Object.keys(signals[0] ?? {}).sort()).toEqual([
+      "cookieEnabled",
+      "devicePixelRatio",
+      "maxTouchPoints",
+      "t",
+      "type",
+      "viewport",
+      "webdriver",
+    ]);
+  });
+
+  it("reports input without a known pointer, e.g. a keyboard click, as an empty pointer type", () => {
+    const signals: Signal[] = [];
+    const stop = startCollector(document, (s) => signals.push(s), { moveIntervalMs: 0 });
+
+    pointer("click", 0, 0, "");
+    pointer("pointermove", 0, 0, "eye-tracker");
+    stop();
+
+    expect(signals.slice(1).map((s) => ("pointer" in s ? s.pointer : null))).toEqual(["", ""]);
+  });
+
   it("samples pointer moves no more often than moveIntervalMs", () => {
     const signals: Signal[] = [];
     const stop = startCollector(document, (s) => signals.push(s), { moveIntervalMs: 50 });
@@ -62,8 +88,9 @@ describe("collector", () => {
 
 describe("batcher", () => {
   const click = { type: "click", t: 0, x: 0, y: 0, button: 0, pointer: "mouse" } as const;
+  const batch = (signals: Signal[]) => ({ t: expect.any(Number) as number, signals });
 
-  it("sends buffered signals on the timer", () => {
+  it("sends buffered signals on the timer with the time on page", () => {
     const { transport, send } = stubTransport();
     const batcher = createBatcher(document, transport, { flushIntervalMs: 1000 });
 
@@ -72,10 +99,20 @@ describe("batcher", () => {
     expect(send).not.toHaveBeenCalled();
 
     vi.advanceTimersByTime(1000);
-    expect(send).toHaveBeenCalledExactlyOnceWith({ signals: [click, click] }, { keepalive: false });
+    expect(send).toHaveBeenCalledExactlyOnceWith(batch([click, click]), { keepalive: false });
+    expect(send.mock.calls[0]?.[0].t).toBe(performance.now());
 
     vi.advanceTimersByTime(1000);
-    expect(send).toHaveBeenCalledOnce(); // empty buffer: nothing sent
+    expect(send).toHaveBeenCalledOnce(); // empty buffer: the timer sends nothing
+    batcher.stop();
+  });
+
+  it("sends an explicit flush even without signals, for the time on page", () => {
+    const { transport, send } = stubTransport();
+    const batcher = createBatcher(document, transport);
+
+    batcher.flush();
+    expect(send).toHaveBeenCalledExactlyOnceWith(batch([]), { keepalive: false });
     batcher.stop();
   });
 
@@ -89,14 +126,18 @@ describe("batcher", () => {
     batcher.stop();
   });
 
-  it("sends with keepalive when the page is hidden", () => {
+  it("sends with keepalive when the page is hidden, even without signals", () => {
     const { transport, send } = stubTransport();
     const batcher = createBatcher(document, transport);
     const visibility = vi.spyOn(document, "visibilityState", "get").mockReturnValue("hidden");
 
     batcher.push(click);
     document.dispatchEvent(new Event("visibilitychange"));
-    expect(send).toHaveBeenCalledExactlyOnceWith({ signals: [click] }, { keepalive: true });
+    document.dispatchEvent(new Event("visibilitychange"));
+    expect(send.mock.calls).toEqual([
+      [batch([click]), { keepalive: true }],
+      [batch([]), { keepalive: true }],
+    ]);
 
     visibility.mockRestore();
     batcher.stop();
@@ -108,9 +149,10 @@ describe("batcher", () => {
 
     batcher.push(click);
     batcher.stop();
-    expect(send).toHaveBeenCalledOnce();
+    expect(send).toHaveBeenCalledExactlyOnceWith(batch([click]), { keepalive: false });
 
     batcher.push(click);
+    batcher.stop();
     vi.advanceTimersByTime(5000);
     expect(send).toHaveBeenCalledOnce();
   });

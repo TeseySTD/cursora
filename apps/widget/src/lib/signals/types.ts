@@ -4,18 +4,23 @@
  * `t` is milliseconds since the page started loading (`performance.now()`), so time on page
  * and the pauses between events can be derived from the timestamps alone.
  *
- * TODO(team): this is the widget-side shape only. The payload the API accepts (and that
- * `packages/features` extracts from) is not defined yet (OQ-15); map to it in the transport.
+ * The API accepts exactly this shape (`SignalBatchIn` in the sessions module) and rejects any
+ * other field, so the widget can never send typed text or form values.
+ * TODO(team): the final signal list (OQ-15).
  */
 export type Signal = PointerMoveSignal | ClickSignal | EnvironmentSignal;
+
+/**
+ * The input device. "" when there is none: a click from the keyboard or from `element.click()`.
+ */
+export type PointerType = "mouse" | "touch" | "pen" | "";
 
 export interface PointerMoveSignal {
   type: "move";
   t: number;
   x: number;
   y: number;
-  /** "mouse", "touch" or "pen". */
-  pointer: string;
+  pointer: PointerType;
 }
 
 export interface ClickSignal {
@@ -24,25 +29,27 @@ export interface ClickSignal {
   x: number;
   y: number;
   button: number;
-  pointer: string;
+  pointer: PointerType;
 }
 
-/** Browser and device parameters, recorded once when collection starts. */
+/**
+ * Coarse browser parameters, recorded once when collection starts.
+ *
+ * Deliberately not a fingerprint: language, timezone, screen size and other high-entropy
+ * attributes stay out until fingerprints are sent only as HMAC hashes (BR-32).
+ */
 export interface EnvironmentSignal {
   type: "env";
   t: number;
-  language: string;
-  languages: readonly string[];
-  timezone: string;
-  screen: { width: number; height: number; colorDepth: number };
   viewport: { width: number; height: number };
   devicePixelRatio: number;
-  hardwareConcurrency: number;
   maxTouchPoints: number;
-  cookieEnabled: boolean;
   webdriver: boolean;
+  cookieEnabled: boolean;
 }
 
 export interface SignalBatch {
+  /** Time on page when the batch was sent, so even an empty batch says how long it has been. */
+  t: number;
   signals: Signal[];
 }
