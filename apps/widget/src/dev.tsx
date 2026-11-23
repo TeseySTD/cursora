@@ -1,5 +1,5 @@
 // Dev harness entry (index.html). Module scripts have no document.currentScript, so mount explicitly.
-import { openSession } from "./lib/session";
+import { createSessionLink } from "./lib/session";
 import { consoleTransport, createApiTransport, type SignalTransport } from "./lib/signals";
 import { mountWidget } from "./mount";
 import type { WidgetView } from "./Widget";
@@ -12,11 +12,12 @@ const apiBaseUrl = new URL("/api", location.href).href;
 
 function devSignalTransport(): SignalTransport {
   if (!siteKey) return consoleTransport;
-  const reopen = () => openSession(apiBaseUrl, siteKey);
-  reopen().catch((error: unknown) =>
-    console.error("[cursora dev] could not open a session", error),
-  );
-  return createApiTransport(apiBaseUrl, { onSessionLost: reopen });
+  const session = createSessionLink(apiBaseUrl, siteKey, {
+    // The harness keeps running for its demo states; only the signals stop.
+    onUnknownSite: () => console.error("[cursora dev] unknown site key: signals are not sent"),
+  });
+  void session.open();
+  return createApiTransport(apiBaseUrl, session);
 }
 
 // Sample data for previewing every state; the real values will come from the API.

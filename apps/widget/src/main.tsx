@@ -1,6 +1,6 @@
 // IIFE entry: runs synchronously when the host page loads <script src=".../widget.js" data-site-key="...">.
 import { mountWidget } from "./mount";
-import { openSession } from "./lib/session";
+import { createSessionLink } from "./lib/session";
 import { createApiTransport } from "./lib/signals";
 
 const script = document.currentScript;
@@ -16,25 +16,26 @@ if (script instanceof HTMLScriptElement) {
     // (open question in CAPTHCA-16).
     const apiBaseUrl = new URL("../api", script.src).href;
     // TODO(team): mount position — right after the <script> tag, or into an explicit container?
-    // A batch without a live session is rejected; the transport then opens a new session and
-    // drops the batch instead of retrying it (CAPTHCA-17 AC4).
-    const signalTransport = createApiTransport(apiBaseUrl, {
-      onSessionLost: () => openSession(apiBaseUrl, siteKey),
+    // One session request at a time, shared with the signal transport: batches wait for it, a
+    // batch rejected for a lost session (401) opens a new one instead of being retried
+    // (CAPTHCA-17 AC4), and an unknown site key stops collection for good.
+    const session = createSessionLink(apiBaseUrl, siteKey, {
+      onUnknownSite: () => widget.stopSignals(),
     });
     const widget = mountWidget(
       script,
-      { siteKey, view: { state: "hidden" }, signalTransport },
+      {
+        siteKey,
+        view: { state: "hidden" },
+        signalTransport: createApiTransport(apiBaseUrl, session),
+      },
       "afterend",
     );
-    openSession(apiBaseUrl, siteKey)
-      .then((session) => {
-        if (session.state === "challenge_required") widget.setView({ state: "checkbox" });
-      })
-      .catch((error: unknown) => {
-        // TODO(team): fail-open or fail-closed? For now the widget stays hidden (fail-open),
-        // and there is no request timeout.
-        console.error("[cursora] could not open a session", error);
-      });
+    // TODO(team): fail-open or fail-closed when no session can be opened? For now the widget
+    // stays hidden (fail-open), and there is no request timeout.
+    void session.open().then((opened) => {
+      if (opened?.state === "challenge_required") widget.setView({ state: "checkbox" });
+    });
   } else {
     console.error("[cursora] <script> tag is missing the data-site-key attribute");
   }

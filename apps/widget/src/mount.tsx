@@ -20,6 +20,8 @@ export interface MountedWidget {
   host: HTMLElement;
   shadowRoot: ShadowRoot;
   setView: (view: WidgetView) => void;
+  /** Stops signal collection for good, e.g. when the API does not know the site key. */
+  stopSignals: () => void;
   unmount: () => void;
 }
 
@@ -86,6 +88,7 @@ export function mountWidget(
     host,
     shadowRoot,
     setView: render,
+    stopSignals: signals.stop,
     unmount: () => {
       signals.stop();
       root.unmount();
