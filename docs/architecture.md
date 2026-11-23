@@ -60,7 +60,26 @@ flowchart LR
 | `decisions`       | risk     | One Risk Engine assessment: decision, score, optional ML score, the sensitivity in force and the client's /24 or /48 prefix, never the full IP. |
 
 The widget sends its site key when it opens a session, and every session belongs to that one
-site. `signal_batches` and `decisions` keep `session_id` as a plain column without a foreign key,
+site.
+
+## Signal ingestion
+
+The widget sends a batch of signals every 2 s while there are new ones, when 100 are buffered,
+when the visitor ticks the checkbox and when the page is hidden, to
+`POST /v1/sessions/signals`. The browser attaches the session cookie. Each batch carries the time
+on page (`t`) and a list of `move`, `click` and coarse `env` signals; the API accepts nothing
+else, so typed text, form values and fingerprint attributes cannot reach the database. The API
+checks, in this order:
+
+1. a live session in the cookie, or `401`: the widget opens a new session and drops the batch;
+2. the batch rate of the session, or `429` with `Retry-After`;
+3. the body size, read no further than the limit, or `413`;
+4. the shape, or `422`; then the number of signals, or `413`.
+
+A stored batch gets `204`. Rejections for size or rate are counted in
+`widget_sessions.rejected_signal_batches`, a request signal for the Risk Engine. The limits are
+settings (`CURSORA_SIGNAL_*` in `.env.example`) with placeholder values until the team decides
+them. `signal_batches` and `decisions` keep `session_id` as a plain column without a foreign key,
 so they stay grouped after the session row is deleted (BR-44 in
 [project-context.md](project-context.md)). Deleting a site deletes all its rows. The retention
 clean-up and the admin API for sites are still to come; for local development,

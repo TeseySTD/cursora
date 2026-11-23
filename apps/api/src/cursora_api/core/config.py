@@ -31,6 +31,14 @@ class Settings(BaseSettings):
     session_cookie_secure: bool = True
     session_cookie_samesite: Literal["lax", "strict", "none"] = "lax"
 
+    # Signal ingestion (sessions module). The widget sends a batch every 2 s or at 100 signals,
+    # so about one a second at most.
+    # TODO(team): maximum batch size and rate are placeholders (open questions in CAPTHCA-17).
+    signal_batch_max_bytes: PositiveInt = 32768
+    signal_batch_max_signals: PositiveInt = 200
+    signal_rate_max_batches: PositiveInt = 10
+    signal_rate_window_s: PositiveInt = 10
+
     @model_validator(mode="after")
     def _samesite_none_requires_secure(self) -> Self:
         # Browsers drop SameSite=None cookies without Secure: every load would be a new session.

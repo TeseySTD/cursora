@@ -14,6 +14,9 @@ def extract_features(signals: Mapping[str, Any]) -> FeatureVector:
     MUST call this function, so that training and serving never drift apart
     (train/serve skew).
 
-    TODO(team): define the signal payload shape and the feature set.
+    The payload is a stored signal batch, as validated by ``SignalBatchIn`` in the API's
+    sessions module (``t`` plus a list of ``move``, ``click`` and ``env`` signals).
+
+    TODO(team): the feature set, and whether features span one batch or a whole session.
     """
     raise NotImplementedError

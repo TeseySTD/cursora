@@ -5,16 +5,17 @@ from http.cookies import Morsel, SimpleCookie
 
 from httpx import Response
 
-from cursora_api.modules.sessions.models import WidgetSession
+from cursora_api.modules.sessions.models import SignalBatch, WidgetSession
 from cursora_api.modules.sessions.repository import SessionRepository
 from cursora_api.modules.sessions.router import SESSION_COOKIE
 
 
 class InMemorySessionRepository(SessionRepository):
-    """Keeps sessions in a dict instead of the database."""
+    """Keeps sessions and signal batches in memory instead of the database."""
 
     def __init__(self) -> None:
         self.rows: dict[str, WidgetSession] = {}
+        self.batches: list[SignalBatch] = []
 
     async def get(self, session_id: str) -> WidgetSession | None:
         return self.rows.get(session_id)
@@ -22,6 +23,19 @@ class InMemorySessionRepository(SessionRepository):
     async def add(self, session: WidgetSession) -> None:
         assert session.id not in self.rows, "primary key violation"
         self.rows[session.id] = session
+
+    async def count_batches_since(self, session_id: str, since: datetime) -> int:
+        return sum(
+            batch.session_id == session_id and batch.received_at > since for batch in self.batches
+        )
+
+    async def add_batch(self, batch: SignalBatch) -> None:
+        batch.id = len(self.batches) + 1
+        self.batches.append(batch)
+
+    async def increment_rejected_batches(self, session_id: str) -> None:
+        if session := self.rows.get(session_id):
+            session.rejected_signal_batches += 1
 
 
 class FakeClock:

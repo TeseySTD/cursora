@@ -49,6 +49,8 @@ class WidgetSession(Base):
     )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    # Signal batches rejected as too large or too frequent: a request signal for the Risk Engine.
+    rejected_signal_batches: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
 
 
 class SignalBatch(Base):

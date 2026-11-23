@@ -266,6 +266,234 @@
           "sessions"
         ]
       }
+    },
+    "/v1/sessions/signals": {
+      "post": {
+        "description": "Store a batch of behavioural signals for the visitor's session.\n\nThe widget sends batches while the visitor is on the page; the browser attaches the\nsession cookie. Batches that are too large or too frequent are counted on the session as a\nrequest signal for the Risk Engine.",
+        "operationId": "sessions_ingest_signals",
+        "parameters": [
+          {
+            "in": "cookie",
+            "name": "cursora_session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursora Session"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "description": "One batch of behavioural signals from the widget.\n\nA batch may have no signals: it still carries the time on page (CAPTHCA-17 AC5).",
+                "properties": {
+                  "signals": {
+                    "items": {
+                      "discriminator": {
+                        "propertyName": "type"
+                      },
+                      "oneOf": [
+                        {
+                          "additionalProperties": false,
+                          "description": "A sampled pointer (cursor or touch) position.",
+                          "properties": {
+                            "pointer": {
+                              "enum": [
+                                "mouse",
+                                "touch",
+                                "pen",
+                                ""
+                              ],
+                              "type": "string"
+                            },
+                            "t": {
+                              "minimum": 0,
+                              "type": "number"
+                            },
+                            "type": {
+                              "const": "move",
+                              "title": "Type",
+                              "type": "string"
+                            },
+                            "x": {
+                              "type": "number"
+                            },
+                            "y": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "t",
+                            "type",
+                            "x",
+                            "y",
+                            "pointer"
+                          ],
+                          "title": "MoveSignal",
+                          "type": "object"
+                        },
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "button": {
+                              "maximum": 31,
+                              "minimum": 0,
+                              "title": "Button",
+                              "type": "integer"
+                            },
+                            "pointer": {
+                              "enum": [
+                                "mouse",
+                                "touch",
+                                "pen",
+                                ""
+                              ],
+                              "type": "string"
+                            },
+                            "t": {
+                              "minimum": 0,
+                              "type": "number"
+                            },
+                            "type": {
+                              "const": "click",
+                              "title": "Type",
+                              "type": "string"
+                            },
+                            "x": {
+                              "type": "number"
+                            },
+                            "y": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "t",
+                            "type",
+                            "x",
+                            "y",
+                            "button",
+                            "pointer"
+                          ],
+                          "title": "ClickSignal",
+                          "type": "object"
+                        },
+                        {
+                          "additionalProperties": false,
+                          "description": "Coarse browser parameters, recorded once per page.\n\nDeliberately not a fingerprint: language, timezone, screen size and other high-entropy\nattributes are left out until fingerprints are collected as HMAC hashes (BR-32).",
+                          "properties": {
+                            "cookieEnabled": {
+                              "title": "Cookieenabled",
+                              "type": "boolean"
+                            },
+                            "devicePixelRatio": {
+                              "exclusiveMinimum": 0,
+                              "title": "Devicepixelratio",
+                              "type": "number"
+                            },
+                            "maxTouchPoints": {
+                              "minimum": 0,
+                              "title": "Maxtouchpoints",
+                              "type": "integer"
+                            },
+                            "t": {
+                              "minimum": 0,
+                              "type": "number"
+                            },
+                            "type": {
+                              "const": "env",
+                              "title": "Type",
+                              "type": "string"
+                            },
+                            "viewport": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "height": {
+                                  "minimum": 0,
+                                  "title": "Height",
+                                  "type": "integer"
+                                },
+                                "width": {
+                                  "minimum": 0,
+                                  "title": "Width",
+                                  "type": "integer"
+                                }
+                              },
+                              "required": [
+                                "width",
+                                "height"
+                              ],
+                              "title": "Viewport",
+                              "type": "object"
+                            },
+                            "webdriver": {
+                              "title": "Webdriver",
+                              "type": "boolean"
+                            }
+                          },
+                          "required": [
+                            "t",
+                            "type",
+                            "viewport",
+                            "devicePixelRatio",
+                            "maxTouchPoints",
+                            "webdriver",
+                            "cookieEnabled"
+                          ],
+                          "title": "EnvironmentSignal",
+                          "type": "object"
+                        }
+                      ]
+                    },
+                    "title": "Signals",
+                    "type": "array"
+                  },
+                  "t": {
+                    "minimum": 0,
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "t",
+                  "signals"
+                ],
+                "title": "SignalBatchIn",
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "No session cookie, or its session is unknown or expired. The batch is not stored; open a new session instead of retrying it."
+          },
+          "413": {
+            "description": "The batch is larger or has more signals than allowed. Not stored."
+          },
+          "422": {
+            "description": "The batch is not valid JSON of the expected shape. Not stored."
+          },
+          "429": {
+            "description": "The session sent too many batches. Not stored; see Retry-After."
+          }
+        },
+        "summary": "Ingest Signals",
+        "tags": [
+          "sessions"
+        ]
+      }
     }
   },
   "tags": [

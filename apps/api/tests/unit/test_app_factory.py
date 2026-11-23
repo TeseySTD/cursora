@@ -10,9 +10,13 @@ def test_create_app_returns_configured_app(settings: Settings) -> None:
     app = create_app(settings)
     assert isinstance(app, FastAPI)
     assert app.state.settings is settings
-    assert {"/health", "/health/db", "/v1/gate/check", "/v1/sessions"} <= set(
-        app.openapi()["paths"]
-    )
+    assert {
+        "/health",
+        "/health/db",
+        "/v1/gate/check",
+        "/v1/sessions",
+        "/v1/sessions/signals",
+    } <= set(app.openapi()["paths"])
 
 
 def test_every_module_is_documented(app: FastAPI) -> None:
@@ -22,4 +26,10 @@ def test_every_module_is_documented(app: FastAPI) -> None:
 
 def test_operation_ids_are_stable(app: FastAPI) -> None:
     ids = {op["operationId"] for path in app.openapi()["paths"].values() for op in path.values()}
-    assert ids == {"system_health", "system_health_db", "gate_check", "sessions_ensure_session"}
+    assert ids == {
+        "system_health",
+        "system_health_db",
+        "gate_check",
+        "sessions_ensure_session",
+        "sessions_ingest_signals",
+    }
