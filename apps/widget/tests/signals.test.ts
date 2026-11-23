@@ -126,17 +126,67 @@ describe("batcher", () => {
     batcher.stop();
   });
 
-  it("sends with keepalive when the page is hidden, even without signals", () => {
+  it("sends with keepalive each time the page is hidden, even without signals", () => {
+    const { transport, send } = stubTransport();
+    const batcher = createBatcher(document, transport);
+    const visibility = vi.spyOn(document, "visibilityState", "get");
+    const setVisibility = (state: DocumentVisibilityState) => {
+      visibility.mockReturnValue(state);
+      document.dispatchEvent(new Event("visibilitychange"));
+    };
+
+    batcher.push(click);
+    setVisibility("hidden");
+    setVisibility("visible");
+    setVisibility("hidden");
+    expect(send.mock.calls).toEqual([
+      [batch([click]), { keepalive: true }],
+      [batch([]), { keepalive: true }],
+    ]);
+
+    visibility.mockRestore();
+    batcher.stop();
+  });
+
+  it.each([
+    ["pagehide first", ["pagehide", "visibilitychange"]],
+    ["visibilitychange first", ["visibilitychange", "pagehide"]],
+  ])("sends one batch when a page is closed (%s), not an empty copy", (_, events) => {
     const { transport, send } = stubTransport();
     const batcher = createBatcher(document, transport);
     const visibility = vi.spyOn(document, "visibilityState", "get").mockReturnValue("hidden");
 
     batcher.push(click);
-    document.dispatchEvent(new Event("visibilitychange"));
-    document.dispatchEvent(new Event("visibilitychange"));
+    for (const type of events) {
+      (type === "pagehide" ? window : document).dispatchEvent(new Event(type));
+    }
+    expect(send.mock.calls).toEqual([[batch([click]), { keepalive: true }]]);
+
+    visibility.mockRestore();
+    batcher.stop();
+  });
+
+  it("still sends on pagehide when it comes alone or with new signals", () => {
+    const { transport, send } = stubTransport();
+    const batcher = createBatcher(document, transport);
+    const visibility = vi.spyOn(document, "visibilityState", "get");
+    const setVisibility = (state: DocumentVisibilityState) => {
+      visibility.mockReturnValue(state);
+      document.dispatchEvent(new Event("visibilitychange"));
+    };
+
+    // Browsers that fire only pagehide.
+    window.dispatchEvent(new Event("pagehide"));
+    // Back on the page (bfcache), then hidden, and signals arrive before pagehide.
+    setVisibility("visible");
+    setVisibility("hidden");
+    batcher.push(click);
+    window.dispatchEvent(new Event("pagehide"));
+
     expect(send.mock.calls).toEqual([
-      [batch([click]), { keepalive: true }],
       [batch([]), { keepalive: true }],
+      [batch([]), { keepalive: true }],
+      [batch([click]), { keepalive: true }],
     ]);
 
     visibility.mockRestore();

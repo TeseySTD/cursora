@@ -54,10 +54,21 @@ export function createBatcher(
   const timer = setInterval(() => {
     if (buffer.length > 0) send();
   }, flushIntervalMs);
-  const onVisibilityChange = () => {
-    if (doc.visibilityState === "hidden") send({ keepalive: true });
+  // Closing or reloading a page fires both `pagehide` and `visibilitychange` (hidden), in either
+  // order depending on the browser, and some browsers (Safari, mobile) fire only one. Both are
+  // kept; whichever comes second skips the empty copy of the batch the first one just sent.
+  let sentOnHide = false;
+  const sendOnHide = () => {
+    if (sentOnHide && buffer.length === 0) return;
+    sentOnHide = true;
+    send({ keepalive: true });
   };
-  const onPageHide = () => send({ keepalive: true });
+  const onVisibilityChange = () => {
+    if (doc.visibilityState === "hidden") sendOnHide();
+    // Visible again: the next hide is a new one and carries a new time on page.
+    else sentOnHide = false;
+  };
+  const onPageHide = sendOnHide;
   doc.addEventListener("visibilitychange", onVisibilityChange);
   doc.defaultView?.addEventListener("pagehide", onPageHide);
 
