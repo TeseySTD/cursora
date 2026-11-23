@@ -3,13 +3,14 @@
 from datetime import timedelta
 from typing import Annotated
 
-from fastapi import APIRouter, Cookie, Depends, Response, status
+from fastapi import APIRouter, Cookie, Depends, HTTPException, Response, status
 
 from cursora_api.core.config import SettingsDep
 from cursora_api.core.db import SessionDep
 from cursora_api.modules.sessions.repository import SessionRepository
-from cursora_api.modules.sessions.schemas import SessionResponse
-from cursora_api.modules.sessions.service import SessionService
+from cursora_api.modules.sessions.schemas import SessionRequest, SessionResponse
+from cursora_api.modules.sessions.service import SessionService, SiteNotFoundError
+from cursora_api.modules.tenant.service import TenantService
 
 # Holds the session id. Never log or return its value.
 SESSION_COOKIE = "cursora_session"
@@ -18,7 +19,11 @@ router = APIRouter(prefix="/sessions", tags=["sessions"])
 
 
 def get_session_service(db: SessionDep, settings: SettingsDep) -> SessionService:
-    return SessionService(SessionRepository(db), ttl=timedelta(seconds=settings.session_ttl_s))
+    return SessionService(
+        SessionRepository(db),
+        TenantService.for_db(db),
+        ttl=timedelta(seconds=settings.session_ttl_s),
+    )
 
 
 SessionServiceDep = Annotated[SessionService, Depends(get_session_service)]
@@ -33,23 +38,29 @@ SessionServiceDep = Annotated[SessionService, Depends(get_session_service)]
             "model": SessionResponse,
             "description": "A new session was created and set in the cookie.",
         },
+        status.HTTP_404_NOT_FOUND: {"description": "No site has this site key."},
     },
 )
 async def ensure_session(
+    body: SessionRequest,
     response: Response,
     service: SessionServiceDep,
     settings: SettingsDep,
     session_id: Annotated[str | None, Cookie(alias=SESSION_COOKIE)] = None,
 ) -> SessionResponse:
-    """Restore the visitor's session from the cookie, or create a new one.
+    """Restore the visitor's session on the site from the cookie, or create a new one.
 
-    Called by the widget when a page with it loads.
+    Called by the widget when a page with it loads, with the site key from its script tag.
 
-    - 200: the cookie holds a live session. It is reused as is, state included.
-    - 201: no cookie, or its session is unknown or expired. A new session in state ``new``
-      is created and its id is set in an HttpOnly cookie that expires with the session.
+    - 200: the cookie holds a live session of this site. It is reused as is, state included.
+    - 201: no cookie, or its session is unknown, expired or of another site. A new session in
+      state ``new`` is created and its id is set in an HttpOnly cookie that expires with it.
+    - 404: no site has this site key.
     """
-    session, created = await service.get_or_create(session_id)
+    try:
+        session, created = await service.get_or_create(session_id, body.site_key)
+    except SiteNotFoundError:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Unknown site key") from None
     if created:
         response.status_code = status.HTTP_201_CREATED
         response.set_cookie(

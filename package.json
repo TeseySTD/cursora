@@ -40,6 +40,7 @@
     "size:widget": "node scripts/widget-size.mjs --check",
     "api:openapi": "node scripts/export-openapi.mjs",
     "api:check": "node scripts/api-check.mjs",
+    "api:create-site": "uv run --package cursora-api python apps/api/scripts/create_site.py",
     "docker:up": "node scripts/compose.mjs prod up -d --build --wait",
     "docker:down": "node scripts/compose.mjs prod down",
     "docker:build": "node scripts/compose.mjs prod build",

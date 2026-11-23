@@ -50,4 +50,20 @@ flowchart LR
   aggregate statistics.
 - **PostgreSQL**: the only datastore (JSONB for flexible signal data). No Redis.
 
+## Data model
+
+| Table             | Module   | Holds                                                                                                                                           |
+| ----------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sites`           | tenant   | Domain, allowed origins, unique public site key, SHA-256 hash of the secret key (the secret itself is shown once), sensitivity 0–100.           |
+| `widget_sessions` | sessions | The session id from the HttpOnly cookie, its site, state (`new` / `challenge_required` / `verified` / `blocked`) and `expires_at`.              |
+| `signal_batches`  | sessions | One widget batch of behavioural signals as JSONB, with its session id and site.                                                                 |
+| `decisions`       | risk     | One Risk Engine assessment: decision, score, optional ML score, the sensitivity in force and the client's /24 or /48 prefix, never the full IP. |
+
+The widget sends its site key when it opens a session, and every session belongs to that one
+site. `signal_batches` and `decisions` keep `session_id` as a plain column without a foreign key,
+so they stay grouped after the session row is deleted (BR-44 in
+[project-context.md](project-context.md)). Deleting a site deletes all its rows. The retention
+clean-up and the admin API for sites are still to come; for local development,
+`pnpm api:create-site --domain localhost` registers a site and prints its keys.
+
 Open decisions (status codes, signals, rules, thresholds) are marked `TODO(team)` in the code.

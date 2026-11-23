@@ -31,6 +31,23 @@
         "title": "HealthResponse",
         "type": "object"
       },
+      "SessionRequest": {
+        "additionalProperties": false,
+        "description": "What the widget sends when a page with it loads.",
+        "properties": {
+          "site_key": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Site Key",
+            "type": "string"
+          }
+        },
+        "required": [
+          "site_key"
+        ],
+        "title": "SessionRequest",
+        "type": "object"
+      },
       "SessionResponse": {
         "description": "The visitor's current session. The id itself is only in the HttpOnly cookie.",
         "properties": {
@@ -179,7 +196,7 @@
     },
     "/v1/sessions": {
       "post": {
-        "description": "Restore the visitor's session from the cookie, or create a new one.\n\nCalled by the widget when a page with it loads.\n\n- 200: the cookie holds a live session. It is reused as is, state included.\n- 201: no cookie, or its session is unknown or expired. A new session in state ``new``\n  is created and its id is set in an HttpOnly cookie that expires with the session.",
+        "description": "Restore the visitor's session on the site from the cookie, or create a new one.\n\nCalled by the widget when a page with it loads, with the site key from its script tag.\n\n- 200: the cookie holds a live session of this site. It is reused as is, state included.\n- 201: no cookie, or its session is unknown, expired or of another site. A new session in\n  state ``new`` is created and its id is set in an HttpOnly cookie that expires with it.\n- 404: no site has this site key.",
         "operationId": "sessions_ensure_session",
         "parameters": [
           {
@@ -199,6 +216,16 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionRequest"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "content": {
@@ -219,6 +246,9 @@
               }
             },
             "description": "A new session was created and set in the cookie."
+          },
+          "404": {
+            "description": "No site has this site key."
           },
           "422": {
             "content": {
