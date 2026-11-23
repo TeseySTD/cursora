@@ -16,7 +16,7 @@ if (script instanceof HTMLScriptElement) {
     const apiBaseUrl = new URL("../api", script.src).href;
     // TODO(team): mount position — right after the <script> tag, or into an explicit container?
     const widget = mountWidget(script, { siteKey, view: { state: "hidden" } }, "afterend");
-    openSession(apiBaseUrl)
+    openSession(apiBaseUrl, siteKey)
       .then((session) => {
         if (session.state === "challenge_required") widget.setView({ state: "checkbox" });
       })
